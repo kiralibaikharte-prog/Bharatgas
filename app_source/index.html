@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0f172a"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Gas Wallet"/>
+<title>Gas Wallet — Bharat Gas Niwali</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+:root{
+  --bg:#f8fafc;--card:#ffffff;--dark:#0f172a;--dark2:#1e293b;
+  --mint:#10b981;--mint-d:#065f46;--mint-bg:#ecfdf5;--mint-border:#a7f3d0;
+  --amber:#f59e0b;--amber-bg:#fffbeb;--amber-border:#fde68a;--amber-text:#92400e;
+  --blue:#2563eb;--blue-bg:#eff6ff;--blue-border:#bfdbfe;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;--purple-border:#ddd6fe;
+  --red:#ef4444;--red-bg:#fef2f2;--red-border:#fecaca;
+  --text:#0f172a;--muted:#64748b;--line:#e2e8f0;
+  --shadow-sm:0 1px 3px rgba(15,23,42,0.06);--shadow-md:0 4px 14px rgba(15,23,42,0.08);
+}
+html,body{background:var(--bg);font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+body{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+.shell{max-width:520px;margin:0 auto;position:relative;min-height:100vh}
+.hidden{display:none !important}
+button,input,select,textarea{font-family:inherit}
+
+/* LOGIN SCREEN (PASSWORDS NOT DISPLAYED FOR SECURITY) */
+.login{position:fixed;inset:0;background:linear-gradient(145deg,#0f172a,#1e293b);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:#fff;border-radius:24px;padding:32px 24px;width:100%;max-width:400px;box-shadow:0 25px 60px rgba(0,0,0,0.35);border:1px solid #334155}
+.login-logo{width:56px;height:56px;border-radius:16px;background:#0f172a;color:#10b981;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px}
+.login h1{font-size:22px;font-weight:900;letter-spacing:-0.5px}
+.login p.sub{color:var(--muted);font-size:13px;margin:4px 0 20px;font-weight:500}
+.field{margin-bottom:14px;position:relative}
+.field label{display:block;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px}
+.field input,.field select,.field textarea{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:#f8fafc;font-size:14px;font-weight:600;outline:none;color:var(--text);transition:0.15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--dark);background:#fff}
+.field input:disabled{background:#f1f5f9;color:var(--muted);cursor:not-allowed}
+.toggle-pass{position:absolute;right:12px;top:33px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted)}
+.role-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;letter-spacing:0.4px}
+.role-admin{background:var(--mint-bg);color:var(--mint-d);border:1px solid var(--mint-border)}
+.role-viewer{background:var(--amber-bg);color:var(--amber-text);border:1px solid var(--amber-border)}
+
+.btn{width:100%;padding:13px;border-radius:14px;border:none;background:var(--dark);color:#fff;font-size:14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:0.15s}
+.btn:active{transform:scale(0.98)}
+.btn.mint{background:var(--mint);color:#fff}
+.btn.ghost{background:#f1f5f9;color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.btn.sm{padding:7px 10px;font-size:11.5px;border-radius:10px}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* TOPBAR */
+.topbar{padding:16px 18px 12px;display:flex;justify-content:space-between;align-items:center}
+.greet{font-size:11px;color:var(--muted);margin-bottom:2px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase}
+.hello{font-size:20px;font-weight:900;letter-spacing:-0.5px;line-height:1.2}
+.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#0f172a,#334155);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;border:2px solid #fff;box-shadow:var(--shadow-sm);cursor:pointer}
+
+/* SYNC STATUS BAR */
+.sync-bar{margin:0 16px 10px;padding:7px 12px;border-radius:10px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:700;color:var(--muted);box-shadow:var(--shadow-sm)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--mint);display:inline-block;margin-right:5px}
+.sync-btn{background:transparent;border:none;color:var(--blue);font-size:11px;font-weight:800;cursor:pointer;padding:2px 5px}
+
+/* VIEWER NOTICE BANNER FOR ANIL */
+.viewer-banner{margin:0 16px 10px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:12px;padding:8px 12px;font-size:11.5px;font-weight:700;color:var(--amber-text);display:flex;align-items:center;gap:6px}
+
+/* 25-DAY REFILL HERO KPI BANNER */
+.refill-kpi-banner{margin:0 16px 10px;background:#fff;border-radius:16px;padding:12px 14px;border:1.5px solid var(--line);box-shadow:var(--shadow-sm);display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}
+.kpi-col{padding:0 4px;position:relative}
+.kpi-col + .kpi-col::before{content:'';position:absolute;left:0;top:10%;height:80%;width:1px;background:var(--line)}
+.kpi-lbl{font-size:9.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:3px}
+.kpi-val{font-size:16px;font-weight:900;font-variant-numeric:tabular-nums}
+.kpi-val.green{color:var(--mint)}
+.kpi-val.amber{color:var(--amber)}
+.kpi-val.muted{color:var(--muted)}
+
+/* WALLET */
+.wallet-wrap{padding:0 16px}
+.wallet{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;border-radius:20px;padding:18px;box-shadow:0 12px 30px rgba(15,23,42,0.22);position:relative;overflow:hidden;border:1px solid #334155}
+.wallet-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.wallet-label{font-size:10px;color:rgba(255,255,255,0.65);font-weight:800;letter-spacing:0.8px;text-transform:uppercase}
+.wallet-badge{font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:999px;background:rgba(16,185,129,0.2);color:#34d399;border:1px solid rgba(16,185,129,0.3)}
+.wallet-amount{font-size:32px;font-weight:900;letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums}
+.wallet-sub{font-size:11px;color:rgba(255,255,255,0.5);margin-top:5px;font-weight:600}
+.wallet-pills{display:flex;gap:6px;margin-top:14px}
+.pill{flex:1;padding:9px;border-radius:10px;border:none;font-size:11.5px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;transition:0.15s}
+.pill.mint{background:#10b981;color:#fff}
+.pill.outline{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15)}
+.pill.purple{background:#7c3aed;color:#fff}
+
+/* CYLINDER INVENTORY (4 columns) */
+.units{margin:10px 16px 0;background:#fff;border-radius:16px;padding:12px 6px;display:grid;grid-template-columns:repeat(4,1fr);box-shadow:var(--shadow-sm);border:1px solid var(--line)}
+.unit{text-align:center;padding:0 2px;position:relative;cursor:pointer;border-radius:10px;transition:0.15s}
+.unit:active{background:#f8fafc}
+.unit + .unit::before{content:'';position:absolute;left:0;top:15%;height:70%;width:1px;background:var(--line)}
+.unit-ico{font-size:15px;margin-bottom:2px;display:block;line-height:1}
+.unit-lbl{font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:3px}
+.unit-val{font-size:17px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
+.unit-edit{font-size:8px;color:var(--muted);margin-top:3px;font-weight:700}
+.unit.available{cursor:default}
+.unit.available .unit-val{color:var(--mint)}
+
+/* TABS */
+.tabs{margin:14px 16px 0;background:#e2e8f0;border-radius:14px;padding:3px;display:flex;gap:3px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:85px;padding:9px 6px;border-radius:11px;border:none;background:transparent;font-size:11.5px;font-weight:800;color:var(--muted);cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:4px;transition:0.15s}
+.tab.active{background:var(--dark);color:#fff;box-shadow:0 2px 6px rgba(15,23,42,0.15)}
+.tab-badge{background:var(--mint);color:#fff;font-size:9.5px;padding:1px 5px;border-radius:999px;font-weight:900}
+.tab-badge.amber{background:var(--amber)}
+
+/* SEARCH & CHIPS */
+.searchrow{padding:12px 16px 0;display:flex;gap:6px}
+.search{flex:1;position:relative}
+.search input{width:100%;padding:10px 12px 10px 34px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:13.5px;font-weight:600;outline:none;color:var(--text);box-shadow:var(--shadow-sm)}
+.search input:focus{border-color:var(--dark)}
+.search::before{content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:12px;opacity:0.5}
+.view-btn{padding:0 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:4px}
+.monthsel{padding:10px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:12px;font-weight:800;color:var(--text);outline:none;cursor:pointer;max-width:110px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 16px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:11.5px;color:var(--muted);cursor:pointer;font-weight:800;white-space:nowrap;transition:0.15s;box-shadow:var(--shadow-sm)}
+.chip.active{background:var(--dark);color:#fff;border-color:var(--dark)}
+
+/* LIST CONTAINER */
+.list{padding:8px 16px 0}
+
+/* 25-DAY REFILL CARD */
+.refill-card{background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;border:1.5px solid var(--line);box-shadow:var(--shadow-sm);position:relative}
+.refill-card.ready{border-color:var(--mint);background:linear-gradient(to right bottom,#ffffff,#f0fdf4)}
+.refill-card.soon{border-color:var(--amber);background:linear-gradient(to right bottom,#ffffff,#fffbeb)}
+.refill-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.rc-name{font-size:16px;font-weight:900;letter-spacing:-0.3px}
+.rc-cid{font-size:12px;color:var(--muted);font-weight:700;margin-top:2px}
+.rc-addr{font-size:12.5px;color:#475569;margin:6px 0 10px;display:flex;align-items:flex-start;gap:5px;line-height:1.35}
+
+.rule-bar-wrap{background:#f1f5f9;border-radius:999px;height:7px;overflow:hidden;margin:8px 0 4px}
+.rule-bar{height:100%;border-radius:999px;background:var(--muted);transition:width 0.3s}
+.rule-bar.ready{background:var(--mint)}
+.rule-bar.soon{background:var(--amber)}
+
+.rule-meta{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:12px}
+.rule-meta b{color:var(--dark)}
+
+.rc-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;border-top:1px dashed var(--line);padding-top:10px}
+.rc-actions.with-book{grid-template-columns:1fr 1fr 1fr}
+.rc-btn{padding:9px 4px;border-radius:10px;border:none;font-size:11.5px;font-weight:800;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:0.15s;text-align:center}
+.rc-btn.call{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.rc-btn.wa{background:var(--mint-bg);color:var(--mint-d);border:1px solid var(--mint-border)}
+.rc-btn.book{background:var(--dark);color:#fff}
+
+/* REFILL TABLE */
+.sheet-table-wrap{background:#fff;border-radius:16px;overflow-x:auto;border:1.5px solid var(--line);box-shadow:var(--shadow-sm);margin-bottom:16px}
+.sheet-table{width:100%;border-collapse:collapse;font-size:11.5px;text-align:left}
+.sheet-table th{background:#0f172a;color:#fff;padding:10px 8px;font-weight:800;letter-spacing:0.3px;white-space:nowrap}
+.sheet-table td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.sheet-table tr:hover{background:#f8fafc}
+.sheet-table tr.ready td{background:#f0fdf4}
+.sheet-table tr.soon td{background:#fffbeb}
+
+/* LIVE DELIVERY CARDS */
+.deliv-card{background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow-sm);border:1.5px solid var(--line)}
+.deliv-card.delivered{border-color:#bbf7d0;background:#fcfdfc}
+.deliv-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.deliv-cust-name{font-size:16px;font-weight:900;letter-spacing:-0.3px;color:var(--dark)}
+.deliv-cust-cid{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:2px}
+.deliv-addr{background:#f8fafc;border-radius:10px;padding:7px 10px;margin:8px 0 10px;font-size:12.5px;font-weight:600;color:#334155;display:flex;gap:5px;line-height:1.3}
+
+.code-box{background:var(--amber-bg);border:1.5px dashed var(--amber-border);border-radius:12px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin:8px 0 10px}
+.code-lbl{font-size:9.5px;font-weight:800;color:var(--amber-text);text-transform:uppercase}
+.code-val{font-size:17px;font-weight:900;color:#78350f;font-family:monospace;letter-spacing:1px}
+.code-copy-btn{background:#fff;border:1px solid var(--amber-border);padding:5px 10px;border-radius:8px;font-size:11px;font-weight:800;color:var(--amber-text);cursor:pointer}
+
+.contact-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.contact-btn{padding:9px;border-radius:11px;font-size:12px;font-weight:800;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px}
+.contact-btn.call{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.contact-btn.wa{background:var(--mint-bg);color:var(--mint-d);border:1px solid var(--mint-border)}
+
+.badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.b-Requested{background:#f1f5f9;color:#475569}
+.b-Confirmed{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.b-OutforDelivery{background:var(--amber-bg);color:var(--amber-text);border:1px solid var(--amber-border)}
+.b-Delivered{background:var(--mint-bg);color:var(--mint-d);border:1px solid var(--mint-border)}
+.b-Cancelled{background:var(--red-bg);color:var(--red)}
+.b-ready{background:var(--mint-bg);color:var(--mint-d);border:1px solid var(--mint-border)}
+.b-soon{background:var(--amber-bg);color:var(--amber-text);border:1px solid var(--amber-border)}
+.b-lock{background:#f1f5f9;color:#64748b}
+
+.item{background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow-sm);border:1px solid var(--line)}
+.item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.item-name{font-size:14.5px;font-weight:800}
+.item-sub{font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:600}
+.item-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-top:10px;font-size:12px;color:#475569;font-weight:600}
+.amount-row{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.amount-box{flex:1;background:#f8fafc;border-radius:10px;padding:6px 8px}
+.amount-box .lbl{font-size:8.5px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.amount-box .val{font-size:13px;font-weight:900;font-variant-numeric:tabular-nums}
+.item-acts{display:flex;gap:6px;margin-top:10px}
+.item-acts button{flex:1;padding:8px;border-radius:10px;border:none;background:#f1f5f9;font-size:11.5px;font-weight:800;color:var(--dark);cursor:pointer}
+
+.history-item{background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow-sm);border:1px solid var(--line);border-left:4px solid #64748b}
+.history-item.type-delivery{border-left-color:var(--mint)}
+.history-item.type-cylinderpay{border-left-color:var(--purple)}
+
+.empty{text-align:center;padding:45px 20px;color:var(--muted)}
+.empty .icon{font-size:40px;margin-bottom:8px;opacity:0.5}
+
+.fab{position:fixed;right:calc(50% - 260px + 18px);bottom:calc(85px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;border:none;background:var(--mint);color:#fff;font-size:28px;font-weight:300;box-shadow:0 8px 20px rgba(16,185,129,0.35);cursor:pointer;z-index:40;display:flex;align-items:center;justify-content:center;line-height:1}
+@media(max-width:560px){.fab{right:16px}}
+
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));background:var(--dark);border-radius:999px;padding:5px 6px;display:flex;gap:3px;box-shadow:0 12px 30px rgba(15,23,42,0.35);z-index:45}
+.nav button{width:48px;height:40px;border-radius:999px;border:none;background:transparent;color:rgba(255,255,255,0.45);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.15s}
+.nav button.active{background:var(--mint);color:#fff}
+
+.modal{position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.modal.open{display:flex}
+.sheet{background:#fff;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border-radius:24px 24px 0 0;padding:20px 18px calc(25px + env(safe-area-inset-bottom))}
+@media(min-width:560px){.modal{align-items:center;padding:16px}.sheet{border-radius:24px}}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.sheet-head h2{font-size:18px;font-weight:900}
+.x{width:32px;height:32px;border-radius:50%;border:none;background:#f1f5f9;color:var(--muted);font-size:15px;cursor:pointer}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form-acts{display:flex;gap:8px;margin-top:16px}
+
+.unit-edit-box{display:flex;flex-direction:column;align-items:center;padding:6px 0 4px}
+.unit-edit-box .big{font-size:52px;font-weight:900;letter-spacing:-2px;line-height:1;margin:6px 0 2px}
+.unit-edit-box .big-lbl{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.unit-stepper{display:flex;gap:10px;margin:16px 0 12px;justify-content:center}
+.unit-stepper button{width:50px;height:50px;border-radius:50%;border:none;background:#f1f5f9;color:var(--dark);font-size:22px;font-weight:700;cursor:pointer}
+
+.toast{position:fixed;left:50%;bottom:150px;transform:translate(-50%,20px);background:var(--dark);color:#fff;padding:10px 18px;border-radius:12px;font-size:12.5px;font-weight:700;z-index:250;opacity:0;transition:0.2s;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,0.3);max-width:85vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+.preview-box{background:#f1f5f9;border-radius:14px;overflow:hidden;margin-bottom:12px;height:52vh;min-height:280px}
+.preview-box iframe,.preview-box img{width:100%;height:100%;border:0;display:block;background:#fff}
+.prev-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.prev-actions button{padding:10px;border-radius:12px;border:none;font-size:12px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+
+.receipt-card{background:#fff;width:380px;padding:22px;border-radius:18px;box-shadow:var(--shadow-md);font-family:'Inter',sans-serif;color:#0f172a;position:fixed;left:-9999px;top:0}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN (SECURE: PASSWORDS NOT DISPLAYED) -->
+<div class="login" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">🔥</div>
+    <h1>Gas Wallet</h1>
+    <p class="sub">Bharat Gas Niwali • Secure Team Portal</p>
+    <form id="loginForm" autocomplete="off">
+      <div class="field">
+        <label>Registered Mobile Number</label>
+        <input id="loginMobile" required inputmode="numeric" maxlength="10" placeholder="Enter 10-digit mobile" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="loginPass" type="password" required placeholder="Enter password" autocomplete="current-password">
+        <button type="button" class="toggle-pass" id="btnTogglePass" title="Show/Hide Password">👁</button>
+      </div>
+      <button class="btn mint" type="submit" id="loginBtn">Sign In to Gas Wallet →</button>
+    </form>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div class="shell hidden" id="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <p class="greet" id="greet">Good morning</p>
+      <h1 class="hello">Hey, <span id="nameDisplay">User</span>! <span id="userRoleBadge"></span></h1>
+    </div>
+    <div class="avatar" id="avatar" title="Profile">A</div>
+  </div>
+
+  <!-- SYNC STATUS BAR -->
+  <div class="sync-bar">
+    <div>
+      <span class="sync-dot"></span>
+      <span id="syncText">Bharat Gas Niwali • Live Sync Active</span>
+    </div>
+    <div>
+      <button class="sync-btn" id="btnSyncNow">🔄 Refresh</button>
+      <button class="sync-btn" id="btnShareList">📲 WhatsApp</button>
+    </div>
+  </div>
+
+  <!-- ANIL VIEWER MODE BANNER -->
+  <div class="viewer-banner hidden" id="anilViewerNotice">
+    <span>🛵</span>
+    <span><b>Anil Viewer Mode:</b> Real-time Live Data Only. Data modifications & cylinder inventory editing are restricted to Ajay.</span>
+  </div>
+
+  <!-- 25-DAY MANDATORY REFILL KPI SUMMARY -->
+  <div class="refill-kpi-banner">
+    <div class="kpi-col">
+      <span class="kpi-lbl">🟢 Ready to Book</span>
+      <div class="kpi-val green" id="kpiReady">0</div>
+      <span style="font-size:9.5px;color:var(--mint);font-weight:700">≥25 Days Passed</span>
+    </div>
+    <div class="kpi-col">
+      <span class="kpi-lbl">🟡 Due in 1–5 Days</span>
+      <div class="kpi-val amber" id="kpiSoon">0</div>
+      <span style="font-size:9.5px;color:var(--amber);font-weight:700">Days 20–24</span>
+    </div>
+    <div class="kpi-col">
+      <span class="kpi-lbl">🔒 In 25-Day Lock</span>
+      <div class="kpi-val muted" id="kpiLocked">0</div>
+      <span style="font-size:9.5px;color:var(--muted);font-weight:700">&lt;20 Days</span>
+    </div>
+  </div>
+
+  <!-- WALLET / CASH IN HAND -->
+  <div class="wallet-wrap">
+    <div class="wallet">
+      <div class="wallet-top">
+        <span class="wallet-label">Net Cash in Hand</span>
+        <span class="wallet-badge" id="walletBadge">● Active</span>
+      </div>
+      <div class="wallet-amount" id="balance">₹0</div>
+      <div class="wallet-sub">Cash Collections − Distributor Payments − Expenses</div>
+      <div class="wallet-pills" id="walletPills">
+        <button class="pill mint" id="btnAddIn">↓ Cash In</button>
+        <button class="pill outline" id="btnAddOut">↑ Expense</button>
+        <button class="pill purple" id="btnPayDistributor">🛢️ Pay Godown</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CYLINDER STOCK / UNITS (4 columns) -->
+  <div class="units">
+    <div class="unit" data-unit="total">
+      <span class="unit-ico">🛢️</span>
+      <span class="unit-lbl">Total</span>
+      <div class="unit-val" id="uTotal">0</div>
+      <div class="unit-edit" id="uTotalEdit">tap edit</div>
+    </div>
+    <div class="unit" data-unit="empty">
+      <span class="unit-ico">📭</span>
+      <span class="unit-lbl">Empty</span>
+      <div class="unit-val" id="uEmpty">0</div>
+      <div class="unit-edit" id="uEmptyEdit">tap edit</div>
+    </div>
+    <div class="unit" data-unit="delivered">
+      <span class="unit-ico">✅</span>
+      <span class="unit-lbl">Delivered</span>
+      <div class="unit-val" id="uDelivered">0</div>
+      <div class="unit-edit" id="uDeliveredEdit">auto</div>
+    </div>
+    <div class="unit available">
+      <span class="unit-ico">📦</span>
+      <span class="unit-lbl">Available</span>
+      <div class="unit-val" id="uAvailable">0</div>
+      <div class="unit-edit">Total − Deliv</div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <div class="tabs">
+    <button class="tab active" data-tab="cards">🚚 Live Cards <span class="tab-badge" id="cardCountBadge">0</span></button>
+    <button class="tab" data-tab="refills">📅 25-Day Refills <span class="tab-badge amber" id="refillBadge">0</span></button>
+    <button class="tab" data-tab="history">📜 History</button>
+    <button class="tab" data-tab="cylinderpay">🛢️ Godown Pay</button>
+    <button class="tab" data-tab="bookings">📋 Bookings</button>
+    <button class="tab" data-tab="transactions">💳 Ledgers</button>
+  </div>
+
+  <!-- SEARCH & FILTER ROW -->
+  <div class="searchrow">
+    <div class="search"><input id="q" type="search" placeholder="Search name, code, CID, mobile..."></div>
+    <button class="view-btn hidden" id="btnToggleTableView" title="Switch between Card and Table Sheet">📊 Table</button>
+    <select class="monthsel" id="monthFilter"><option value="All">All</option></select>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <!-- MAIN LIST CONTAINER -->
+  <div class="list" id="list"></div>
+</div>
+
+<!-- FLOATING ACTION BUTTON (AJAY ADMIN ONLY) -->
+<button class="fab hidden" id="fab" title="Add Customer / Entry">+</button>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="nav hidden" id="nav">
+  <button data-nav="home" class="active" title="Home">🏠</button>
+  <button data-nav="cards" title="Live Delivery Cards">🚚</button>
+  <button data-nav="refills" title="25-Day Refill Eligibility">📅</button>
+  <button data-nav="history" title="History">📜</button>
+  <button data-nav="cylinderpay" title="Godown Settlement">🛢️</button>
+  <button data-nav="report" title="Reports">📄</button>
+  <button data-nav="profile" title="Profile">👤</button>
+</nav>
+
+<!-- BOOKING MODAL (AJAY ADMIN ONLY) -->
+<div class="modal" id="bookingModal">
+  <div class="sheet">
+    <div class="sheet-head"><h2 id="bookTitle">Customer Refill Booking</h2><button class="x" data-close>✕</button></div>
+    <form id="bookForm" autocomplete="off">
+      <div class="field">
+        <label>Customer Name *</label>
+        <input id="fName" required placeholder="e.g. Suresh Patel" autocapitalize="words">
+      </div>
+      <div class="field">
+        <label>Delivery Address / Colony / Landmark *</label>
+        <input id="fAddress" required placeholder="e.g. Patel Mohalla, Near Bus Stand, Niwali" autocapitalize="words">
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Consumer No. *</label>
+          <input id="fConsumer" required inputmode="numeric" placeholder="123456789">
+        </div>
+        <div class="field">
+          <label>Mobile Number</label>
+          <input id="fMobile" inputmode="tel" maxlength="10" placeholder="9876543210">
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Delivery Code (DAC/OTP)</label>
+          <input id="fCode" placeholder="e.g. DC-8891 or 8891" style="font-weight:800;color:#92400e;background:#fffbeb">
+        </div>
+        <div class="field">
+          <label>Booking Ref.</label>
+          <input id="fRef" placeholder="BR778210">
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Booking Date *</label>
+          <input id="fDate" type="date" required>
+        </div>
+        <div class="field">
+          <label>Refill Type</label>
+          <select id="fRefill">
+            <option value="14.2 kg">14.2 kg Domestic (₹905)</option>
+            <option value="5 kg">5 kg Chhotu (₹360)</option>
+            <option value="19 kg">19 kg Commercial (₹1850)</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Status</label>
+          <select id="fStatus">
+            <option value="Out for Delivery">Out for Delivery</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Requested">Requested</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Delivery Date</label>
+          <input id="fDelivDate" type="date">
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Payment Mode</label>
+          <select id="fPayMode">
+            <option value="Cash">💵 Cash</option>
+            <option value="UPI">📱 UPI / Online</option>
+            <option value="Due">⏳ Customer Due</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Bill Amount (₹)</label>
+          <input id="fAmount" type="number" step="any" inputmode="decimal" placeholder="905">
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Received Amount (₹)</label>
+          <input id="fReceived" type="number" step="any" inputmode="decimal" placeholder="905">
+        </div>
+        <div class="field">
+          <label>Distributor Rate (₹)</label>
+          <input id="fPaid" type="number" step="any" inputmode="decimal" placeholder="850">
+        </div>
+      </div>
+      <div class="form-acts">
+        <button type="button" class="btn ghost" data-close>Cancel</button>
+        <button type="submit" class="btn mint">Save Booking</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- GODOWN CYLINDER PAYMENT MODAL (AJAY ADMIN ONLY) -->
+<div class="modal" id="cylinderPayModal">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Pay Bharat Gas Godown</h2><button class="x" data-close>✕</button></div>
+    <form id="cpForm" autocomplete="off">
+      <div class="field"><label>Payment Date *</label><input id="cpDate" type="date" required></div>
+      <div class="grid2">
+        <div class="field"><label>Amount Paid (₹) *</label><input id="cpAmount" type="number" step="any" required placeholder="17000"></div>
+        <div class="field"><label>Cylinders Count</label><input id="cpCylCount" type="number" placeholder="20"></div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Payment Method</label>
+          <select id="cpMode">
+            <option value="Bank Transfer">🏦 Bank Transfer</option>
+            <option value="UPI">📱 UPI / QR</option>
+            <option value="Cash">💵 Cash</option>
+            <option value="Cheque">📜 Cheque</option>
+          </select>
+        </div>
+        <div class="field"><label>Challan / Ref No.</label><input id="cpRef" placeholder="BG-CH-9912"></div>
+      </div>
+      <div class="field"><label>Notes</label><input id="cpNotes" placeholder="e.g. Settle 20 cylinders 14.2kg batch"></div>
+      <div class="form-acts">
+        <button type="button" class="btn ghost" data-close>Cancel</button>
+        <button type="submit" class="btn purple">Record Godown Payment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- UNIT INVENTORY EDIT MODAL (AJAY ADMIN ONLY) -->
+<div class="modal" id="unitModal">
+  <div class="sheet">
+    <div class="sheet-head"><h2 id="unitTitle">Update Cylinders</h2><button class="x" data-close>✕</button></div>
+    <div class="unit-edit-box">
+      <div class="big-lbl" id="unitBigLabel">TOTAL UNIT</div>
+      <div class="big" id="unitBigVal">0</div>
+    </div>
+    <div class="unit-stepper">
+      <button type="button" id="unitMinus">−</button>
+      <button type="button" id="unitPlus">+</button>
+    </div>
+    <div class="field"><label>Or enter exact count</label><input id="unitInput" type="number" inputmode="numeric" placeholder="0"></div>
+    <div class="form-acts">
+      <button type="button" class="btn ghost" data-close>Cancel</button>
+      <button type="button" class="btn mint" id="unitSave">Save Count</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSACTION MODAL (AJAY ADMIN ONLY) -->
+<div class="modal" id="txModal">
+  <div class="sheet">
+    <div class="sheet-head"><h2 id="txTitle">Add Cash Ledger Entry</h2><button class="x" data-close>✕</button></div>
+    <form id="txForm" autocomplete="off">
+      <div class="field">
+        <label>Type</label>
+        <select id="txType">
+          <option value="in">Cash In (Received)</option>
+          <option value="out">Cash Out (Expense)</option>
+        </select>
+      </div>
+      <div class="field"><label>Amount (₹) *</label><input id="txAmount" type="number" step="any" required placeholder="1000"></div>
+      <div class="field"><label>Date *</label><input id="txDate" type="date" required></div>
+      <div class="field"><label>Note</label><input id="txNote" placeholder="e.g. Godown vehicle petrol"></div>
+      <div class="form-acts">
+        <button type="button" class="btn ghost" data-close>Cancel</button>
+        <button type="submit" class="btn mint">Save Entry</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal" id="reportModal">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Generate Report</h2><button class="x" data-close>✕</button></div>
+    <div class="field"><label>From Date</label><input id="repFrom" type="date"></div>
+    <div class="field"><label>To Date</label><input id="repTo" type="date"></div>
+    <div class="form-acts">
+      <button type="button" class="btn ghost" data-close>Cancel</button>
+      <button type="button" class="btn mint" id="doExport">📄 Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal" id="profileModal">
+  <div class="sheet">
+    <div class="sheet-head"><h2>Profile</h2><button class="x" data-close>✕</button></div>
+    <div style="text-align:center;padding:4px 0 16px">
+      <div class="avatar" id="profileAvatar" style="width:68px;height:68px;font-size:26px;margin:0 auto 10px"></div>
+      <div style="font-size:18px;font-weight:900" id="profileName">—</div>
+      <div style="font-size:12.5px;color:var(--muted);margin-top:2px" id="profileMobile">—</div>
+      <div style="margin-top:6px" id="profileRole"></div>
+    </div>
+    <button class="btn danger" id="logoutBtn">Logout</button>
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal" id="previewModal">
+  <div class="sheet">
+    <div class="sheet-head"><h2 id="previewTitle">Preview</h2><button class="x" data-close>✕</button></div>
+    <div class="preview-box" id="previewBox"></div>
+    <div class="prev-actions">
+      <button class="btn mint" id="pvSave">💾 Save</button>
+      <button class="btn ghost" id="pvShare">📤 Share</button>
+      <button class="btn ghost" id="pvImage">🖼️ PNG Image</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- RECEIPT RENDER -->
+<div class="receipt-card" id="receiptRender">
+  <div style="font-weight:900;font-size:16px">Gas Wallet — Bharat Gas Niwali</div>
+  <div style="font-size:11px;color:#64748b;margin-bottom:12px">Refill Delivery & Payment Verification</div>
+  <div style="background:#fffbeb;border:1px dashed #fde68a;padding:8px;border-radius:10px;text-align:center;margin-bottom:10px">
+    <div style="font-size:9.5px;color:#92400e;font-weight:800;text-transform:uppercase">Delivery Code (DAC/OTP)</div>
+    <div style="font-size:18px;font-weight:900;color:#78350f;font-family:monospace" id="rcCodeVal">DC-0000</div>
+  </div>
+  <div style="font-size:12px;line-height:1.5">
+    <div>Customer: <b id="rcCustName">—</b></div>
+    <div>Consumer No: <b id="rcCustCID">—</b></div>
+    <div>Address: <span id="rcCustAddress">—</span></div>
+    <div>Date: <span id="rcCustDate">—</span></div>
+    <div>Payment: <b id="rcCustPayMode">Cash</b> • Amount: <b id="rcCustAmount">₹905</b></div>
+  </div>
+  <div style="font-size:10px;color:#94a3b8;text-align:center;margin-top:14px">Delivered by Anil Bharat Gas Niwali</div>
+</div>
+
+<script>
+/* =====================================================
+   TEAM ACCESS & CREDENTIALS (SUNIL REMOVED)
+   Ajay: Admin (NANDU#01)
+   Anil: Viewer Only (ANIL#01)
+===================================================== */
+const MEMBERS = {
+  '9399968109': { name:'Ajay', role:'admin', title:'Administrator', pass:'NANDU#01' },
+  '9301031375': { name:'Anil Bharat Gas Niwali', role:'viewer', title:'Viewer (Live Data Only)', pass:'ANIL#01' }
+};
+
+const KEY = 'gaswallet_v9_clean_prod';
+const MANDATORY_GAP_DAYS = 25; // Bharat Gas 25-Day Refill Rule
+
+// Clean initial data (ZERO DEMO DATA)
+function cleanInitialData(){
+  return {
+    user: null,
+    syncRoom: 'niwali-bharat-gas',
+    units: { total: 0, empty: 0, delivered: 0 },
+    rates: {
+      '14.2 kg': { retail: 905, distributor: 850, margin: 55 },
+      '5 kg': { retail: 360, distributor: 330, margin: 30 },
+      '19 kg': { retail: 1850, distributor: 1720, margin: 130 }
+    },
+    distributorPayments: [],
+    bookings: [],
+    transactions: []
+  };
+}
+
+let S = load();
+let tab = 'cards';
+let tableView = false;
+let F = { q:'', status:'All', month:'All', txType:'All', cardFilter:'Active', refillFilter:'All' };
+let editingBookId = null, editingTxId = null, editingUnit = null, unitTempVal = 0;
+let currentPreview = null;
+
+function load(){
+  try{
+    const r = localStorage.getItem(KEY);
+    if(r) return JSON.parse(r);
+  }catch(e){}
+  return cleanInitialData();
+}
+
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+}
+
+function uid(){ return 'g_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function money(n){ return '₹' + (parseFloat(n)||0).toLocaleString('en-IN', { maximumFractionDigits:2 }); }
+
+function toLocalISO(d){
+  const date = d || new Date();
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+function todayISO(){ return toLocalISO(new Date()); }
+
+function fmtDate(d){
+  if(!d) return '—';
+  if(typeof d === 'string' && d.includes('-')){
+    const p = d.split('-');
+    if(p.length === 3 && p[0].length === 4) return `${p[2]}-${p[1]}-${p[0]}`;
+  }
+  return d;
+}
+
+// STRICT ROLES:
+// Ajay: Admin (Can add/edit/delete bookings, add transactions, godown payments, edit cylinder availability)
+// Anil: Viewer (CANNOT modify any data, strictly view live cards, delivery codes, 25-day refill sheet, and history)
+function isAdmin(){ return S.user && S.user.role === 'admin'; }
+function isViewer(){ return S.user && S.user.role === 'viewer'; }
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+/* =====================================================
+   25-DAY RULE ENGINE FOR UPCOMING REFILLS
+===================================================== */
+function calculateRefillEligibility(booking){
+  const delivDateStr = booking.deliveryDate || booking.date;
+  if(!delivDateStr) return null;
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const deliv = new Date(delivDateStr);
+  deliv.setHours(0,0,0,0);
+
+  const diffMs = today.getTime() - deliv.getTime();
+  const daysElapsed = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  const eligibleDateObj = new Date(deliv);
+  eligibleDateObj.setDate(eligibleDateObj.getDate() + MANDATORY_GAP_DAYS);
+  const eligibleDateStr = toLocalISO(eligibleDateObj);
+
+  const daysLeft = Math.max(0, MANDATORY_GAP_DAYS - daysElapsed);
+
+  let statusKey = 'lock';
+  let statusText = `Lock: ${daysLeft}d left`;
+  let badgeClass = 'b-lock';
+
+  if(daysElapsed >= MANDATORY_GAP_DAYS){
+    statusKey = 'ready';
+    statusText = `Eligible Now (Day ${daysElapsed})`;
+    badgeClass = 'b-ready';
+  } else if(daysLeft <= 5){
+    statusKey = 'soon';
+    statusText = `Due in ${daysLeft} day${daysLeft > 1 ? 's' : ''}`;
+    badgeClass = 'b-soon';
+  }
+
+  const progressPct = Math.min(100, Math.round((daysElapsed / MANDATORY_GAP_DAYS) * 100));
+
+  return {
+    booking,
+    deliveryDate: delivDateStr,
+    eligibleDate: eligibleDateStr,
+    daysElapsed,
+    daysLeft,
+    statusKey,
+    statusText,
+    badgeClass,
+    progressPct
+  };
+}
+
+function getRefillDataSheet(){
+  const delivered = S.bookings.filter(b => b.status === 'Delivered');
+  const customerMap = new Map();
+  delivered.forEach(b => {
+    const cid = b.consumerNo || b.mobile || b.id;
+    const existing = customerMap.get(cid);
+    if(!existing || (b.deliveryDate || b.date) > (existing.deliveryDate || existing.date)){
+      customerMap.set(cid, b);
+    }
+  });
+
+  const list = [];
+  customerMap.forEach(b => {
+    const el = calculateRefillEligibility(b);
+    if(el) list.push(el);
+  });
+
+  const priority = { ready: 1, soon: 2, lock: 3 };
+  list.sort((a,b) => {
+    if(priority[a.statusKey] !== priority[b.statusKey]){
+      return priority[a.statusKey] - priority[b.statusKey];
+    }
+    return b.daysElapsed - a.daysElapsed;
+  });
+
+  return list;
+}
+
+/* =====================================================
+   STATS & WALLET
+===================================================== */
+function stats(){
+  const bIn = S.bookings.reduce((a,b)=> a + (parseFloat(b.received)||0), 0);
+  const tIn = S.transactions.filter(t=>t.type==='in').reduce((a,t)=> a + (parseFloat(t.amount)||0), 0);
+  const tOut = S.transactions.filter(t=>t.type==='out').reduce((a,t)=> a + (parseFloat(t.amount)||0), 0);
+  const dpOut = S.distributorPayments.reduce((a,p)=> a + (parseFloat(p.amount)||0), 0);
+  const totalReceived = bIn + tIn;
+  const totalPaid = tOut + dpOut;
+
+  return {
+    received: totalReceived,
+    paid: totalPaid,
+    due: totalReceived - totalPaid
+  };
+}
+
+function renderWalletAndKPIs(){
+  const s = stats();
+  document.getElementById('balance').textContent = money(s.due);
+  document.getElementById('walletBadge').textContent = s.due >= 0 ? '● In Hand' : '● Deficit';
+
+  // Units
+  const u = S.units || { total: 0, empty: 0, delivered: 0 };
+  const total = parseInt(u.total) || 0;
+  const empty = parseInt(u.empty) || 0;
+  const delivered = parseInt(u.delivered) || 0;
+  const available = Math.max(0, total - delivered);
+  document.getElementById('uTotal').textContent = total;
+  document.getElementById('uEmpty').textContent = empty;
+  document.getElementById('uDelivered').textContent = delivered;
+  document.getElementById('uAvailable').textContent = available;
+
+  // 25-Day Refill KPIs
+  const sheet = getRefillDataSheet();
+  const readyCount = sheet.filter(x => x.statusKey === 'ready').length;
+  const soonCount = sheet.filter(x => x.statusKey === 'soon').length;
+  const lockCount = sheet.filter(x => x.statusKey === 'lock').length;
+
+  document.getElementById('kpiReady').textContent = readyCount;
+  document.getElementById('kpiSoon').textContent = soonCount;
+  document.getElementById('kpiLocked').textContent = lockCount;
+  document.getElementById('refillBadge').textContent = readyCount + soonCount;
+}
+
+/* =====================================================
+   SECURE PASSWORD LOGIN (NO DISPLAYED PASSWORDS)
+===================================================== */
+const loginMobile = document.getElementById('loginMobile');
+const loginPass = document.getElementById('loginPass');
+const btnTogglePass = document.getElementById('btnTogglePass');
+
+btnTogglePass.onclick = () => {
+  loginPass.type = loginPass.type === 'password' ? 'text' : 'password';
+};
+
+document.getElementById('loginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const mobile = loginMobile.value.trim();
+  const password = loginPass.value.trim();
+
+  const m = MEMBERS[mobile];
+  if(!m){
+    return toast('❌ Mobile not authorized. Contact Ajay.');
+  }
+
+  if(password !== m.pass){
+    return toast('❌ Incorrect Password. Please check and re-enter.');
+  }
+
+  S.user = { name: m.name, mobile, role: m.role, title: m.title };
+  save();
+  showApp();
+  toast(`Welcome, ${m.name}!`);
+});
+
+/* =====================================================
+   APP SHELL & ROLE PERMISSIONS
+===================================================== */
+function greetText(){
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+}
+
+function showApp(){
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('nav').classList.remove('hidden');
+
+  const firstName = S.user.name.split(' ')[0];
+  document.getElementById('nameDisplay').textContent = firstName;
+  document.getElementById('greet').textContent = greetText();
+  document.getElementById('avatar').textContent = firstName[0].toUpperCase();
+
+  const roleEl = document.getElementById('userRoleBadge');
+  const anilNotice = document.getElementById('anilViewerNotice');
+  const walletPills = document.getElementById('walletPills');
+  const fab = document.getElementById('fab');
+
+  if(isViewer()){
+    // ANIL IS STRICTLY VIEWER (CANNOT MODIFY DATA)
+    roleEl.innerHTML = `<span class="role-badge role-viewer">👁 VIEWER (LIVE DATA)</span>`;
+    anilNotice.classList.remove('hidden');
+    walletPills.classList.add('hidden');
+    document.getElementById('uTotalEdit').textContent = 'view only';
+    document.getElementById('uEmptyEdit').textContent = 'view only';
+    document.getElementById('uDeliveredEdit').textContent = 'view only';
+    fab.classList.add('hidden'); // FAB hidden for Anil
+  } else {
+    // AJAY (ADMIN - FULL CONTROLS)
+    roleEl.innerHTML = `<span class="role-badge role-admin">👑 ADMIN</span>`;
+    anilNotice.classList.add('hidden');
+    walletPills.classList.remove('hidden');
+    document.getElementById('uTotalEdit').textContent = 'tap edit';
+    document.getElementById('uEmptyEdit').textContent = 'tap edit';
+    document.getElementById('uDeliveredEdit').textContent = 'auto';
+    fab.classList.remove('hidden');
+  }
+
+  updateTabsUI();
+  renderAll();
+}
+
+/* =====================================================
+   CYLINDER UNIT EDITING (STRICTLY ADMIN ONLY)
+===================================================== */
+const unitModal = document.getElementById('unitModal');
+document.querySelectorAll('.unit[data-unit]').forEach(u => {
+  u.onclick = () => {
+    if(!isAdmin()){
+      return toast('👁 View-only access • Stock can only be edited by Ajay');
+    }
+    const key = u.dataset.unit;
+    editingUnit = key;
+    unitTempVal = parseInt(S.units[key]) || 0;
+    const labels = { total:'TOTAL CYLINDERS', empty:'EMPTY CYLINDERS', delivered:'DELIVERED CYLINDERS' };
+    document.getElementById('unitTitle').textContent = 'Update ' + labels[key].split(' ')[0];
+    document.getElementById('unitBigLabel').textContent = labels[key];
+    document.getElementById('unitBigVal').textContent = unitTempVal;
+    document.getElementById('unitInput').value = unitTempVal;
+    unitModal.classList.add('open');
+  };
+});
+
+function updateUnitBig(){
+  document.getElementById('unitBigVal').textContent = unitTempVal;
+  document.getElementById('unitInput').value = unitTempVal;
+}
+document.getElementById('unitMinus').onclick = () => { unitTempVal = Math.max(0, unitTempVal - 1); updateUnitBig(); };
+document.getElementById('unitPlus').onclick  = () => { unitTempVal = unitTempVal + 1; updateUnitBig(); };
+document.getElementById('unitInput').addEventListener('input', e => {
+  unitTempVal = parseInt(e.target.value) || 0;
+  document.getElementById('unitBigVal').textContent = unitTempVal;
+});
+document.getElementById('unitSave').onclick = () => {
+  if(!isAdmin()) return toast('❌ Admin only');
+  if(!editingUnit) return;
+  S.units[editingUnit] = unitTempVal;
+  save(); closeAll(); renderAll();
+  toast('✅ Cylinder availability updated');
+};
+
+/* =====================================================
+   TABS & CHIPS
+===================================================== */
+function switchTab(t){
+  tab = t;
+  updateTabsUI();
+  F.q = ''; document.getElementById('q').value = '';
+  renderChips();
+  renderList();
+}
+
+function updateTabsUI(){
+  document.querySelectorAll('.tab').forEach(x => {
+    x.classList.toggle('active', x.dataset.tab === tab);
+  });
+  document.getElementById('btnToggleTableView').classList.toggle('hidden', tab !== 'refills');
+
+  // Hide FAB if user is Anil
+  if(isViewer()){
+    document.getElementById('fab').classList.add('hidden');
+  } else {
+    document.getElementById('fab').classList.remove('hidden');
+  }
+}
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => switchTab(t.dataset.tab);
+});
+
+document.getElementById('btnToggleTableView').onclick = () => {
+  tableView = !tableView;
+  document.getElementById('btnToggleTableView').textContent = tableView ? '📱 Cards' : '📊 Table';
+  renderList();
+};
+
+function renderChips(){
+  const el = document.getElementById('chips');
+  let items = [], cur = '';
+  if(tab === 'cards'){
+    items = ['Active', 'Out for Delivery', 'Delivered', 'All'];
+    cur = F.cardFilter;
+  } else if(tab === 'refills'){
+    items = ['All', '🟢 Eligible Now (Can Book)', '🟡 Due Soon (1-5 Days)', '🔒 Locked (<20d)'];
+    cur = F.refillFilter;
+  } else if(tab === 'history'){
+    items = ['All History', 'Delivered', 'Godown Payments', 'Today'];
+    cur = F.status;
+  } else if(tab === 'bookings'){
+    items = ['All', 'Requested', 'Confirmed', 'Out for Delivery', 'Delivered'];
+    cur = F.status;
+  } else {
+    items = ['All', 'Cash In', 'Cash Out'];
+    cur = F.txType;
+  }
+
+  el.innerHTML = items.map(s =>
+    `<button class="chip ${cur===s?'active':''}" data-val="${esc(s)}">${esc(s)}</button>`
+  ).join('');
+
+  el.querySelectorAll('.chip').forEach(c => {
+    c.onclick = () => {
+      const v = c.dataset.val;
+      if(tab === 'cards') F.cardFilter = v;
+      else if(tab === 'refills') F.refillFilter = v;
+      else if(tab === 'bookings' || tab === 'history') F.status = v;
+      else F.txType = v;
+      renderChips();
+      renderList();
+    };
+  });
+}
+
+/* =====================================================
+   RENDER MAIN VIEWS
+===================================================== */
+function renderList(){
+  const el = document.getElementById('list');
+  const admin = isAdmin();
+  const q = F.q.trim().toLowerCase();
+
+  const activeCount = S.bookings.filter(b => b.status !== 'Delivered' && b.status !== 'Cancelled').length;
+  document.getElementById('cardCountBadge').textContent = activeCount;
+
+  if(tab === 'refills'){
+    // ==========================================
+    // 📅 25-DAY UPCOMING REFILL SHEET VIEW
+    // ==========================================
+    let list = getRefillDataSheet();
+
+    if(F.refillFilter === '🟢 Eligible Now (Can Book)'){
+      list = list.filter(x => x.statusKey === 'ready');
+    } else if(F.refillFilter === '🟡 Due Soon (1-5 Days)'){
+      list = list.filter(x => x.statusKey === 'soon');
+    } else if(F.refillFilter === '🔒 Locked (<20d)'){
+      list = list.filter(x => x.statusKey === 'lock');
+    }
+
+    if(q){
+      list = list.filter(x => {
+        const hay = [x.booking.name, x.booking.address, x.booking.consumerNo, x.booking.mobile, x.eligibleDate].join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
+    if(!list.length){
+      el.innerHTML = `<div class="empty">
+        <div class="icon">📅</div>
+        <p><b>No customers in 25-day refill cycle</b></p>
+        <p>Delivered customer bookings will automatically appear here with their 25-day refill eligibility.</p>
+      </div>`;
+      return;
+    }
+
+    if(tableView){
+      el.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:800;color:var(--muted)">25-DAY MANDATORY REFILL DATA SHEET</div>
+          <button class="btn sm mint" style="width:auto;padding:5px 10px" onclick="exportRefillCSV()">📊 Export CSV</button>
+        </div>
+        <div class="sheet-table-wrap">
+          <table class="sheet-table">
+            <thead>
+              <tr>
+                <th>Customer & CID</th>
+                <th>Mobile</th>
+                <th>Last Delivered</th>
+                <th>Days Passed</th>
+                <th>25-Day Due Date</th>
+                <th>Status</th>
+                ${admin ? `<th>Action</th>` : ''}
+              </tr>
+            </thead>
+            <tbody>
+              ${list.map(x => `
+                <tr class="${x.statusKey}">
+                  <td>
+                    <b>${esc(x.booking.name)}</b>
+                    <div style="font-size:10px;color:var(--muted)">CID: ${esc(x.booking.consumerNo)}</div>
+                  </td>
+                  <td>${x.booking.mobile ? `<a href="tel:${x.booking.mobile}" style="color:var(--blue);font-weight:800;text-decoration:none">${esc(x.booking.mobile)}</a>` : '—'}</td>
+                  <td>${fmtDate(x.deliveryDate)}</td>
+                  <td><b>${x.daysElapsed} days</b></td>
+                  <td><b>${fmtDate(x.eligibleDate)}</b></td>
+                  <td><span class="badge ${x.badgeClass}">${x.statusText}</span></td>
+                  ${admin ? `
+                  <td>
+                    <button class="btn sm ${x.statusKey === 'ready' ? 'mint' : 'ghost'}" style="width:auto;padding:4px 8px" data-booknext="${x.booking.id}">
+                      ➕ Book
+                    </button>
+                  </td>` : ''}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    } else {
+      el.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:800;color:var(--muted)">UPCOMING REFILL ELIGIBILITY (${list.length})</div>
+          <button class="btn sm ghost" style="width:auto;padding:4px 9px" onclick="exportRefillCSV()">📊 Export CSV</button>
+        </div>
+        ${list.map(x => {
+          const b = x.booking;
+          const phone = (b.mobile || '').replace(/\D/g,'');
+
+          const waReminder = encodeURIComponent(
+            `नमस्ते ${b.name} जी,\n` +
+            `आपका पिछला भारत गैस सिलिंडर ${x.daysElapsed} दिन पहले (${fmtDate(x.deliveryDate)}) डिलीवर हुआ था।\n` +
+            (x.statusKey === 'ready'
+              ? `✅ भारत गैस के 25 दिन नियम अनुसार आज से आप अपना अगला रिफिल बुक करवा सकते हैं।\n`
+              : `⏳ आपका अगला रिफिल ${fmtDate(x.eligibleDate)} (${x.daysLeft} दिन बाद) से बुक होगा।\n`) +
+            `बुकिंग करवाने के लिए हमें बताएं।\n- अनिल भारत गैस निवाली (+91 9301031375)`
+          );
+
+          return `
+          <div class="refill-card ${x.statusKey}">
+            <div class="refill-card-head">
+              <div>
+                <div class="rc-name">${esc(b.name)}</div>
+                <div class="rc-cid">CID: <b>${esc(b.consumerNo)}</b> • 📱 ${esc(b.mobile || 'No mobile')}</div>
+              </div>
+              <span class="badge ${x.badgeClass}">${x.statusText}</span>
+            </div>
+
+            <div class="rc-addr">📍 ${esc(b.address || 'Niwali')}</div>
+
+            <div class="rule-bar-wrap">
+              <div class="rule-bar ${x.statusKey}" style="width:${x.progressPct}%"></div>
+            </div>
+            <div class="rule-meta">
+              <span>Delivered: <b>${fmtDate(x.deliveryDate)}</b> (${x.daysElapsed}d ago)</span>
+              <span>Next Booking: <b>${fmtDate(x.eligibleDate)}</b></span>
+            </div>
+
+            <div class="rc-actions ${admin ? 'with-book' : ''}">
+              ${phone ? `<a href="tel:${phone}" class="rc-btn call">📞 Call</a>` : `<span class="rc-btn ghost">No Phone</span>`}
+              ${phone ? `<a href="https://wa.me/91${phone}?text=${waReminder}" target="_blank" class="rc-btn wa">💬 WhatsApp</a>` : `<span class="rc-btn ghost">No WA</span>`}
+              ${admin ? `<button class="rc-btn book" data-booknext="${b.id}">➕ Book Refill</button>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      `;
+    }
+
+  } else if(tab === 'cards'){
+    // ==========================================
+    // 🚚 LIVE DELIVERY CARDS (ANIL VIEWS LIVE DATA ONLY)
+    // ==========================================
+    const list = S.bookings.filter(b => {
+      if(F.cardFilter === 'Active' && (b.status === 'Delivered' || b.status === 'Cancelled')) return false;
+      if(F.cardFilter === 'Out for Delivery' && b.status !== 'Out for Delivery') return false;
+      if(F.cardFilter === 'Delivered' && b.status !== 'Delivered') return false;
+      if(q){
+        const hay = [b.name, b.address, b.consumerNo, b.mobile, b.deliveryCode].join(' ').toLowerCase();
+        return hay.includes(q);
+      }
+      return true;
+    }).sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+
+    if(!list.length){
+      el.innerHTML = `<div class="empty">
+        <div class="icon">🚚</div>
+        <p><b>No active delivery cards</b></p>
+        <p>${admin ? 'Tap + to add a customer booking.' : 'Live cards added by Ajay will appear here.'}</p>
+      </div>`;
+      return;
+    }
+
+    el.innerHTML = list.map(b => {
+      const isDeliv = b.status === 'Delivered';
+      const phone = (b.mobile || '').replace(/\D/g,'');
+      const curMode = b.paymentMode || 'Cash';
+
+      const waMsg = encodeURIComponent(
+        `Namaste ${b.name},\nBharat Gas Niwali cylinder is out for delivery!\nDelivery Code: ${b.deliveryCode || 'N/A'}\nBill: ₹${b.amount || '905'}\n- Anil (+91 9301031375)`
+      );
+
+      return `
+      <div class="deliv-card ${isDeliv ? 'delivered' : ''}">
+        <div class="deliv-card-head">
+          <div>
+            <div class="deliv-cust-name">${esc(b.name)}</div>
+            <div class="deliv-cust-cid">CID: <b>${esc(b.consumerNo)}</b> • 📦 ${esc(b.refill || '14.2 kg')}</div>
+          </div>
+          <span class="badge ${b.status==='Delivered'?'b-Delivered':'b-OutforDelivery'}">${esc(b.status)}</span>
+        </div>
+
+        <div class="deliv-addr">📍 ${esc(b.address || 'Niwali')}</div>
+
+        <!-- HIGH-VISIBILITY DELIVERY CODE (DAC/OTP) WITH 1-TAP COPY FOR ANIL -->
+        <div class="code-box">
+          <div>
+            <div class="code-lbl">Delivery Code (DAC/OTP)</div>
+            <div class="code-val">${esc(b.deliveryCode || 'NO CODE')}</div>
+          </div>
+          <div>
+            ${b.deliveryCode ? `<button class="code-copy-btn" data-copycode="${esc(b.deliveryCode)}">📋 Copy Code</button>` : ''}
+          </div>
+        </div>
+
+        <!-- CONTACT SHORTCUTS FOR ANIL -->
+        <div class="contact-row">
+          ${phone ? `<a href="tel:${phone}" class="contact-btn call">📞 Call Customer</a>` : `<span class="contact-btn ghost">No Phone</span>`}
+          ${phone ? `<a href="https://wa.me/91${phone}?text=${waMsg}" target="_blank" class="contact-btn wa">💬 WhatsApp</a>` : `<span class="contact-btn ghost">No WA</span>`}
+        </div>
+
+        <div class="amount-row">
+          <div class="amount-box"><span class="lbl">Bill</span><div class="val">${money(b.amount || 905)}</div></div>
+          <div class="amount-box ${b.received ? 'green' : 'red'}"><span class="lbl">Payment</span><div class="val">${b.received ? money(b.received) + ' (' + curMode + ')' : 'Due: ' + money(b.amount || 905)}</div></div>
+          <div class="amount-box"><span class="lbl">Status</span><div class="val" style="font-size:11px">${esc(b.status)}</div></div>
+        </div>
+
+        <!-- ACTIONS: ONLY ADMIN (AJAY) CAN MODIFY -->
+        <div class="item-acts">
+          <button data-share="${b.id}">📄 View Receipt</button>
+          ${admin ? `
+            <button data-markdeliv="${b.id}" style="color:var(--mint-d);background:var(--mint-bg)">✅ Delivered</button>
+            <button data-edit="${b.id}">✏️ Edit</button>
+            <button data-del="${b.id}" style="color:var(--red)">🗑 Delete</button>
+          ` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+  } else if(tab === 'history'){
+    // ==========================================
+    // 📜 UNIFIED HISTORY (DELIVERIES + GODOWN PAYMENTS)
+    // ==========================================
+    const list = S.bookings.filter(b => b.status === 'Delivered').sort((a,b)=> (b.deliveryDate||b.date).localeCompare(a.deliveryDate||a.date));
+    if(!list.length){
+      el.innerHTML = `<div class="empty"><div class="icon">📜</div><p><b>No history records yet</b></p></div>`;
+      return;
+    }
+    el.innerHTML = list.map(b => `
+      <div class="history-item type-delivery">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:15px;font-weight:900">📦 ${esc(b.name)}</div>
+            <div style="font-size:11.5px;color:var(--muted)">Delivered: ${fmtDate(b.deliveryDate || b.date)} • CID: ${esc(b.consumerNo)}</div>
+          </div>
+          <span class="badge b-Delivered">Delivered</span>
+        </div>
+        <div style="font-size:12px;color:#475569;margin-top:6px">
+          📍 ${esc(b.address || 'Niwali')} • 💰 <b>${money(b.amount || 905)}</b> (${b.paymentMode || 'Cash'})
+          ${b.deliveryCode ? `• 🔑 <b>${esc(b.deliveryCode)}</b>` : ''}
+          ${b.emptyReceived ? '• 📭 Empty Returned ✓' : ''}
+        </div>
+        <div style="margin-top:8px;text-align:right">
+          <button class="btn sm ghost" style="width:auto;padding:4px 8px" data-share="${b.id}">📄 Receipt</button>
+        </div>
+      </div>
+    `).join('');
+
+  } else if(tab === 'cylinderpay'){
+    // ==========================================
+    // 🛢️ GODOWN PAYMENTS (AJAY ADMIN ONLY CAN ADD)
+    // ==========================================
+    const list = S.distributorPayments;
+    const addGodownBtn = admin ? `<button class="btn sm purple" style="width:auto;padding:6px 12px" onclick="openCylinderPayModal()">+ Pay Godown</button>` : '';
+
+    if(!list.length){
+      el.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:12px;font-weight:800;color:var(--muted)">GODOWN CYLINDER SETTLEMENTS</div>
+          ${addGodownBtn}
+        </div>
+        <div class="empty"><div class="icon">🛢️</div><p><b>No godown payments recorded yet</b></p></div>
+      `;
+      return;
+    }
+
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:800;color:var(--muted)">GODOWN CYLINDER SETTLEMENTS</div>
+        ${addGodownBtn}
+      </div>
+      ${list.map(p => `
+        <div class="item" style="border-left:4px solid var(--purple)">
+          <div class="item-top">
+            <div>
+              <div class="item-name">🛢️ ${p.cylCount ? p.cylCount + ' Cylinders Paid' : 'Godown Settlement'}</div>
+              <div class="item-sub">${fmtDate(p.date)} • ${esc(p.mode)} ${p.receiptRef ? '• Ref: '+esc(p.receiptRef) : ''}</div>
+              ${p.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(p.notes)}</div>` : ''}
+            </div>
+            <div style="font-size:16px;font-weight:900;color:var(--purple)">${money(p.amount)}</div>
+          </div>
+        </div>
+      `).join('')}
+    `;
+
+  } else if(tab === 'bookings'){
+    // ==========================================
+    // 📋 ALL BOOKINGS
+    // ==========================================
+    const list = S.bookings.filter(b => {
+      if(F.status !== 'All' && b.status !== F.status) return false;
+      if(q){
+        const hay = [b.name, b.address, b.consumerNo, b.mobile, b.bookingRef].join(' ').toLowerCase();
+        return hay.includes(q);
+      }
+      return true;
+    });
+
+    if(!list.length){
+      el.innerHTML = `<div class="empty"><div class="icon">📋</div><p><b>No bookings yet</b></p><p>${admin ? 'Tap + to create a customer booking.' : 'Live bookings will appear here.'}</p></div>`;
+      return;
+    }
+
+    el.innerHTML = list.map(b => `
+      <div class="item">
+        <div class="item-top">
+          <div>
+            <div class="item-name">${esc(b.name)}</div>
+            <div class="item-sub">${esc(b.consumerNo)} • ${esc(b.mobile || 'no phone')}</div>
+          </div>
+          <span class="badge ${b.status==='Delivered'?'b-Delivered':'b-Confirmed'}">${esc(b.status)}</span>
+        </div>
+        <div class="item-meta">
+          <div>📅 ${fmtDate(b.date)}</div>
+          <div>🔑 <b>${esc(b.deliveryCode || 'No Code')}</b></div>
+          <div>📦 ${esc(b.refill || '14.2 kg')}</div>
+          <div>💰 ${money(b.amount || 905)}</div>
+        </div>
+        <div class="item-acts">
+          <button data-share="${b.id}">📄 Receipt</button>
+          ${admin ? `
+            <button data-edit="${b.id}">✏️ Edit</button>
+            <button data-del="${b.id}" style="color:var(--red)">🗑 Delete</button>
+          ` : ''}
+        </div>
+      </div>
+    `).join('');
+
+  } else {
+    // ==========================================
+    // 💳 LEDGERS (ANIL CAN ONLY VIEW LIVE DATA)
+    // ==========================================
+    const list = S.transactions;
+    if(!list.length){
+      el.innerHTML = `<div class="empty"><div class="icon">💳</div><p><b>No ledger transactions yet</b></p></div>`;
+      return;
+    }
+    el.innerHTML = list.map(t => `
+      <div class="item">
+        <div class="item-top">
+          <div>
+            <div class="item-name">${t.type==='in'?'↓ Cash Received':'↑ Expense Paid'}</div>
+            <div class="item-sub">${fmtDate(t.date)} • ${esc(t.note || 'Ledger')}</div>
+          </div>
+          <div style="font-size:15px;font-weight:900;color:${t.type==='in'?'var(--mint)':'var(--red)'}">${money(t.amount)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+function renderAll(){
+  renderWalletAndKPIs();
+  renderChips();
+  renderList();
+}
+
+/* =====================================================
+   EXPORT 25-DAY REFILL DATA SHEET TO CSV
+===================================================== */
+function exportRefillCSV(){
+  const sheet = getRefillDataSheet();
+  if(!sheet.length) return toast('No customer refill data to export');
+
+  let csv = 'Customer Name,Consumer Number,Mobile,Address,Last Delivery Date,Days Elapsed,Eligible Refill Date (25-Day Rule),Status,Days Remaining\n';
+
+  sheet.forEach(x => {
+    const b = x.booking;
+    csv += `"${(b.name||'').replace(/"/g,'""')}",` +
+           `"${(b.consumerNo||'').replace(/"/g,'""')}",` +
+           `"${(b.mobile||'').replace(/"/g,'""')}",` +
+           `"${(b.address||'').replace(/"/g,'""')}",` +
+           `"${x.deliveryDate}",` +
+           `"${x.daysElapsed}",` +
+           `"${x.eligibleDate}",` +
+           `"${x.statusText}",` +
+           `"${x.daysLeft}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `BharatGas_25Day_RefillSheet_${todayISO()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  toast('📊 25-Day Refill CSV Data Sheet downloaded!');
+}
+
+/* =====================================================
+   PRE-FILL BOOKING FOR UPCOMING CUSTOMER (ADMIN ONLY)
+===================================================== */
+function bookRefillForCustomer(bookId){
+  if(!isAdmin()){
+    return toast('👁 View-only • Customer bookings can only be created by Ajay');
+  }
+  const b = S.bookings.find(x => x.id === bookId);
+  if(!b) return;
+
+  editingBookId = null;
+  document.getElementById('bookTitle').textContent = `Book Refill for ${b.name}`;
+  document.getElementById('fName').value = b.name;
+  document.getElementById('fAddress').value = b.address || 'Niwali';
+  document.getElementById('fConsumer').value = b.consumerNo;
+  document.getElementById('fMobile').value = b.mobile || '';
+  document.getElementById('fRef').value = 'BR' + Math.floor(100000 + Math.random() * 900000);
+  document.getElementById('fCode').value = '';
+  document.getElementById('fDate').value = todayISO();
+  document.getElementById('fRefill').value = b.refill || '14.2 kg';
+  document.getElementById('fStatus').value = 'Confirmed';
+  document.getElementById('fDelivDate').value = '';
+  document.getElementById('fPayMode').value = 'Cash';
+  document.getElementById('fAmount').value = '905';
+  document.getElementById('fReceived').value = '905';
+  document.getElementById('fPaid').value = '850';
+
+  document.getElementById('bookingModal').classList.add('open');
+}
+
+/* =====================================================
+   EVENT DELEGATION
+===================================================== */
+document.getElementById('list').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if(!b) return;
+
+  // BOOK NEXT REFILL BUTTON (ADMIN ONLY)
+  if(b.dataset.booknext){
+    bookRefillForCustomer(b.dataset.booknext);
+    return;
+  }
+
+  // COPY DELIVERY CODE (AVAILABLE TO ANIL & ADMIN)
+  if(b.dataset.copycode){
+    navigator.clipboard.writeText(b.dataset.copycode).then(()=>{
+      toast(`✅ Code Copied: ${b.dataset.copycode}`);
+    }).catch(()=> prompt('Copy Code:', b.dataset.copycode));
+    return;
+  }
+
+  // MARK DELIVERED (ADMIN ONLY)
+  if(b.dataset.markdeliv){
+    if(!isAdmin()){
+      return toast('👁 View-only • Status updates are recorded by Ajay');
+    }
+    const bk = S.bookings.find(x => x.id === b.dataset.markdeliv);
+    if(bk){
+      bk.status = 'Delivered';
+      bk.deliveryDate = todayISO();
+      if(!bk.delivAdj){
+        S.units.delivered = (S.units.delivered || 0) + 1;
+        bk.delivAdj = true;
+      }
+      if(!bk.received && bk.amount) bk.received = bk.amount;
+      save(); renderAll();
+      toast(`✅ ${bk.name}: Delivered (+1 Count)`);
+    }
+    return;
+  }
+
+  // SHARE BILL / RECEIPT (AVAILABLE TO ANIL & ADMIN)
+  if(b.dataset.share){
+    const bk = S.bookings.find(x => x.id === b.dataset.share);
+    if(bk) generateBookingPDF(bk);
+    return;
+  }
+
+  // EDIT BOOKING (ADMIN ONLY)
+  if(b.dataset.edit){
+    if(!isAdmin()) return toast('👁 View-only • Data can only be modified by Ajay');
+    const bk = S.bookings.find(x => x.id === b.dataset.edit);
+    if(bk) openEditBook(bk);
+    return;
+  }
+
+  // DELETE BOOKING (ADMIN ONLY)
+  if(b.dataset.del){
+    if(!isAdmin()) return toast('❌ Admin only');
+    const bk = S.bookings.find(x => x.id === b.dataset.del);
+    if(bk && confirm(`Delete booking of ${bk.name}?`)){
+      S.bookings = S.bookings.filter(x => x.id !== bk.id);
+      save(); renderAll(); toast('🗑 Deleted');
+    }
+    return;
+  }
+});
+
+/* =====================================================
+   SEARCH INPUT
+===================================================== */
+document.getElementById('q').addEventListener('input', e => { F.q = e.target.value; renderList(); });
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+document.querySelectorAll('.nav button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.nav button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    const a = b.dataset.nav;
+    if(a === 'home' || a === 'cards') switchTab('cards');
+    else if(a === 'refills') switchTab('refills');
+    else if(a === 'history') switchTab('history');
+    else if(a === 'cylinderpay') switchTab('cylinderpay');
+    else if(a === 'report') openReport();
+    else if(a === 'profile') openProfile();
+  };
+});
+
+/* =====================================================
+   BOOKING MODAL (AJAY ADMIN ONLY)
+===================================================== */
+document.getElementById('fab').onclick = () => {
+  if(!isAdmin()){
+    return toast('👁 View-only • New records can only be created by Ajay');
+  }
+
+  editingBookId = null;
+  document.getElementById('bookTitle').textContent = 'New Customer Booking';
+  document.getElementById('fName').value = '';
+  document.getElementById('fAddress').value = '';
+  document.getElementById('fConsumer').value = '';
+  document.getElementById('fMobile').value = '';
+  document.getElementById('fRef').value = '';
+  document.getElementById('fCode').value = '';
+  document.getElementById('fDate').value = todayISO();
+  document.getElementById('fRefill').value = '14.2 kg';
+  document.getElementById('fStatus').value = 'Out for Delivery';
+  document.getElementById('fDelivDate').value = '';
+  document.getElementById('fPayMode').value = 'Cash';
+  document.getElementById('fAmount').value = '905';
+  document.getElementById('fReceived').value = '905';
+  document.getElementById('fPaid').value = '850';
+  document.getElementById('bookingModal').classList.add('open');
+};
+
+function openEditBook(b){
+  if(!isAdmin()) return toast('❌ Admin only');
+  editingBookId = b.id;
+  document.getElementById('bookTitle').textContent = 'Edit Customer Booking';
+  document.getElementById('fName').value = b.name;
+  document.getElementById('fAddress').value = b.address || '';
+  document.getElementById('fConsumer').value = b.consumerNo;
+  document.getElementById('fMobile').value = b.mobile || '';
+  document.getElementById('fRef').value = b.bookingRef || '';
+  document.getElementById('fCode').value = b.deliveryCode || '';
+  document.getElementById('fDate').value = b.date || todayISO();
+  document.getElementById('fRefill').value = b.refill || '14.2 kg';
+  document.getElementById('fStatus').value = b.status || 'Out for Delivery';
+  document.getElementById('fDelivDate').value = b.deliveryDate || '';
+  document.getElementById('fPayMode').value = b.paymentMode || 'Cash';
+  document.getElementById('fAmount').value = b.amount || '905';
+  document.getElementById('fReceived').value = b.received || '905';
+  document.getElementById('fPaid').value = b.paidToDistributor || '850';
+  document.getElementById('bookingModal').classList.add('open');
+}
+
+document.getElementById('bookForm').addEventListener('submit', e => {
+  e.preventDefault();
+  if(!isAdmin()) return toast('❌ Admin only');
+
+  const booking = {
+    id: editingBookId || uid(),
+    name: document.getElementById('fName').value.trim(),
+    address: document.getElementById('fAddress').value.trim(),
+    consumerNo: document.getElementById('fConsumer').value.trim(),
+    mobile: document.getElementById('fMobile').value.trim(),
+    bookingRef: document.getElementById('fRef').value.trim(),
+    deliveryCode: document.getElementById('fCode').value.trim(),
+    date: document.getElementById('fDate').value,
+    refill: document.getElementById('fRefill').value,
+    status: document.getElementById('fStatus').value,
+    deliveryDate: document.getElementById('fDelivDate').value,
+    paymentMode: document.getElementById('fPayMode').value,
+    amount: document.getElementById('fAmount').value.trim(),
+    received: document.getElementById('fReceived').value.trim(),
+    paidToDistributor: document.getElementById('fPaid').value.trim(),
+    emptyReceived: false,
+    delivAdj: false
+  };
+
+  if(booking.status === 'Delivered' && !booking.deliveryDate) booking.deliveryDate = todayISO();
+  if(booking.status === 'Delivered') booking.delivAdj = true;
+
+  if(editingBookId){
+    const idx = S.bookings.findIndex(x => x.id === editingBookId);
+    S.bookings[idx] = booking;
+    toast('✅ Booking updated');
+  } else {
+    S.bookings.unshift(booking);
+    toast('✅ Customer booking saved');
+  }
+
+  save(); closeAll(); renderAll();
+});
+
+/* =====================================================
+   GODOWN CYLINDER PAYMENT (AJAY ADMIN ONLY)
+===================================================== */
+function openCylinderPayModal(){
+  if(!isAdmin()){
+    return toast('👁 View-only • Godown cylinder payments can only be recorded by Ajay');
+  }
+  document.getElementById('cpDate').value = todayISO();
+  document.getElementById('cpAmount').value = '';
+  document.getElementById('cpCylCount').value = '20';
+  document.getElementById('cpRef').value = '';
+  document.getElementById('cpNotes').value = '';
+  document.getElementById('cylinderPayModal').classList.add('open');
+}
+
+document.getElementById('btnPayDistributor').onclick = openCylinderPayModal;
+
+document.getElementById('cpForm').addEventListener('submit', e => {
+  e.preventDefault();
+  if(!isAdmin()) return toast('❌ Admin only');
+  const payment = {
+    id: 'dp_' + Date.now().toString(36),
+    date: document.getElementById('cpDate').value,
+    amount: parseFloat(document.getElementById('cpAmount').value) || 0,
+    cylCount: parseInt(document.getElementById('cpCylCount').value) || 0,
+    mode: document.getElementById('cpMode').value,
+    receiptRef: document.getElementById('cpRef').value.trim(),
+    notes: document.getElementById('cpNotes').value.trim()
+  };
+  S.distributorPayments.unshift(payment);
+  save(); closeAll(); renderAll();
+  toast('✅ Godown payment recorded');
+});
+
+/* =====================================================
+   TRANSACTIONS (AJAY ADMIN ONLY)
+===================================================== */
+document.getElementById('btnAddIn').onclick  = () => openTx('in');
+document.getElementById('btnAddOut').onclick = () => openTx('out');
+
+function openTx(type){
+  if(!isAdmin()){
+    return toast('👁 View-only • Cash ledger entries can only be added by Ajay');
+  }
+  document.getElementById('txType').value = type;
+  document.getElementById('txAmount').value = '';
+  document.getElementById('txDate').value = todayISO();
+  document.getElementById('txNote').value = '';
+  document.getElementById('txModal').classList.add('open');
+}
+
+document.getElementById('txForm').addEventListener('submit', e => {
+  e.preventDefault();
+  if(!isAdmin()) return toast('❌ Admin only');
+  const tx = {
+    id: uid(),
+    type: document.getElementById('txType').value,
+    amount: document.getElementById('txAmount').value,
+    date: document.getElementById('txDate').value,
+    note: document.getElementById('txNote').value.trim()
+  };
+  S.transactions.unshift(tx);
+  save(); closeAll(); renderAll();
+  toast('✅ Entry saved');
+});
+
+/* =====================================================
+   DISPATCH WHATSAPP (ANIL & AJAY)
+===================================================== */
+document.getElementById('btnShareList').onclick = () => {
+  const pending = S.bookings.filter(b => b.status !== 'Cancelled');
+  if(!pending.length) return toast('No active bookings to dispatch');
+  let msg = `🔥 *BHARAT GAS NIWALI - TODAY'S DELIVERIES*\n📅 Date: ${fmtDate(todayISO())}\n📦 Orders: ${pending.length}\n\n`;
+  pending.forEach((b, idx) => {
+    msg += `${idx+1}️⃣ *${b.name}*\n📍 ${b.address || 'Niwali'}\n📱 ${b.mobile || '—'} | CID: ${b.consumerNo}\n🔑 *Code: ${b.deliveryCode || 'PENDING'}*\n💰 Bill: ₹${b.amount || '905'}\n------------------\n`;
+  });
+  window.open(`https://wa.me/919301031375?text=${encodeURIComponent(msg)}`, '_blank');
+};
+
+document.getElementById('btnSyncNow').onclick = () => {
+  save(); renderAll(); toast('🔄 Refreshed & Synced');
+};
+
+/* =====================================================
+   PROFILE & MODAL CLOSE
+===================================================== */
+function openProfile(){
+  document.getElementById('profileAvatar').textContent = S.user.name.trim()[0].toUpperCase();
+  document.getElementById('profileName').textContent = S.user.name;
+  document.getElementById('profileMobile').textContent = '+91 ' + S.user.mobile;
+  document.getElementById('profileRole').innerHTML = `<span class="role-badge role-${S.user.role}">${S.user.title.toUpperCase()}</span>`;
+  document.getElementById('profileModal').classList.add('open');
+}
+
+document.getElementById('logoutBtn').onclick = () => {
+  if(confirm('Logout from this device?')){
+    S.user = null; save(); location.reload();
+  }
+};
+
+document.querySelectorAll('[data-close]').forEach(x => x.onclick = closeAll);
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if(e.target === m) closeAll(); }));
+
+function closeAll(){
+  document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
+}
+
+/* =====================================================
+   PDF BUILDER
+===================================================== */
+function generateBookingPDF(b){
+  if(!window.jspdf || !window.jspdf.jsPDF) return toast('PDF library not ready');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+
+  doc.setFillColor(15,23,42); doc.rect(0, 0, 210, 36, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(16);
+  doc.text('Bharat Gas Niwali — Refill Receipt', 16, 18);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(148,163,184);
+  doc.text(`Agent: ${S.user.name} (+91 ${S.user.mobile})   |   Date: ${fmtDate(b.date)}`, 16, 26);
+
+  doc.setFillColor(254,243,199); doc.setDrawColor(253,230,138); doc.roundedRect(14, 44, 182, 16, 3, 3, 'FD');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(146,64,14);
+  doc.text('DELIVERY AUTHENTICATION CODE (DAC/OTP):', 18, 51);
+  doc.setFontSize(13); doc.setTextColor(120,53,15);
+  doc.text(b.deliveryCode ? b.deliveryCode : 'PENDING CODE', 18, 57);
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(15,23,42);
+  let y = 70;
+  const lines = [
+    `Customer Name: ${b.name}`,
+    `Consumer CID: ${b.consumerNo}`,
+    `Mobile Number: ${b.mobile || '—'}`,
+    `Delivery Address: ${b.address || 'Niwali'}`,
+    `Refill Type: ${b.refill || '14.2 kg'}`,
+    `Status: ${b.status} • Payment: ${b.paymentMode || 'Cash'}`,
+    `Total Bill: Rs. ${b.amount || '905'}`
+  ];
+  lines.forEach(l => { doc.text(l, 16, y); y += 9; });
+
+  const fname = `Receipt_${(b.name||'customer').replace(/\s+/g,'_')}.pdf`;
+  const blob = doc.output('blob');
+  openPreview(blob, fname);
+}
+
+function openReport(){
+  document.getElementById('repFrom').value = todayISO().slice(0,7) + '-01';
+  document.getElementById('repTo').value = todayISO();
+  document.getElementById('reportModal').classList.add('open');
+}
+
+document.getElementById('doExport').onclick = () => {
+  if(!window.jspdf || !window.jspdf.jsPDF) return toast('PDF library not ready');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+
+  doc.setFillColor(15,23,42); doc.rect(0, 0, 210, 32, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(15);
+  doc.text('Bharat Gas Niwali — Delivery & 25-Day Refill Report', 14, 16);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(148,163,184);
+  doc.text(`Generated: ${new Date().toLocaleString('en-IN')}`, 14, 24);
+
+  const sheet = getRefillDataSheet();
+  if(doc.autoTable){
+    doc.autoTable({
+      startY: 40,
+      head: [['Customer','CID','Mobile','Delivered','Days','25-Day Due Date','Refill Status']],
+      body: sheet.map(x => [
+        x.booking.name,
+        x.booking.consumerNo,
+        x.booking.mobile || '—',
+        fmtDate(x.deliveryDate),
+        x.daysElapsed + 'd',
+        fmtDate(x.eligibleDate),
+        x.statusText
+      ]),
+      styles:{ fontSize:8, cellPadding:2.5 },
+      headStyles:{ fillColor:[15,23,42] }
+    });
+  }
+
+  const blob = doc.output('blob');
+  closeAll();
+  openPreview(blob, `BharatGas_Report_${todayISO()}.pdf`);
+};
+
+function openPreview(blob, filename){
+  const url = URL.createObjectURL(blob);
+  currentPreview = { blob, filename, url };
+  const box = document.getElementById('previewBox');
+  box.innerHTML = `<iframe src="${url}"></iframe>`;
+  document.getElementById('previewModal').classList.add('open');
+}
+
+document.getElementById('pvSave').onclick = () => {
+  if(!currentPreview) return;
+  const a = document.createElement('a');
+  a.href = currentPreview.url;
+  a.download = currentPreview.filename;
+  a.click();
+  toast('📥 Download started');
+};
+
+document.getElementById('pvShare').onclick = () => {
+  if(!currentPreview) return;
+  if(navigator.share){
+    const f = new File([currentPreview.blob], currentPreview.filename, { type:'application/pdf' });
+    navigator.share({ files:[f], title: currentPreview.filename }).catch(()=>{});
+  } else {
+    toast('Use Save to download and send on WhatsApp');
+  }
+};
+
+/* =====================================================
+   INITIALIZATION & PWA SERVICE WORKER
+===================================================== */
+if(S.user && MEMBERS[S.user.mobile]){
+  S.user = { ...MEMBERS[S.user.mobile], mobile: S.user.mobile };
+  showApp();
+} else {
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

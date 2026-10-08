@@ -1,0 +1,16 @@
+{
+  "name": "Gas Wallet \u2014 Bharat Gas Niwali",
+  "short_name": "GasWallet",
+  "description": "Team manager, live delivery cards, cylinder payments, and history for Anil Bharat Gas Niwali",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0d0d10",
+  "theme_color": "#0d0d10",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230d0d10'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%23b8efd5'>\ud83d\udd25</text></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

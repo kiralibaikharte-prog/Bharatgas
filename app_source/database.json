@@ -1,0 +1,45 @@
+{
+  "version": "3.0_security_update",
+  "agency": "Bharat Gas Niwali",
+  "users": [
+    {
+      "mobile": "9399968109",
+      "name": "Ajay",
+      "role": "admin",
+      "title": "Administrator",
+      "pass": "NANDU#01"
+    },
+    {
+      "mobile": "9301031375",
+      "name": "Anil Bharat Gas Niwali",
+      "role": "viewer",
+      "title": "Viewer (Live Data Only)",
+      "pass": "ANIL#01"
+    }
+  ],
+  "units": {
+    "total": 0,
+    "empty": 0,
+    "delivered": 0
+  },
+  "rates": {
+    "14.2 kg": {
+      "retail": 905,
+      "distributor": 850,
+      "margin": 55
+    },
+    "5 kg": {
+      "retail": 360,
+      "distributor": 330,
+      "margin": 30
+    },
+    "19 kg": {
+      "retail": 1850,
+      "distributor": 1720,
+      "margin": 130
+    }
+  },
+  "bookings": [],
+  "distributorPayments": [],
+  "transactions": []
+}
