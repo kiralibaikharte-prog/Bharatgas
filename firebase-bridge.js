@@ -67,6 +67,11 @@
     };
   }
   async function gate(){
+    const appEl=document.getElementById("app"), navEl=document.getElementById("nav"), loginEl=document.getElementById("loginScreen");
+    if(appEl) appEl.classList.add("hidden");
+    if(navEl) navEl.classList.add("hidden");
+    if(loginEl) loginEl.classList.remove("hidden");
+    if(window.S && window.S.user) window.S.user=null;
     await init();
     installSaveSync();
     const form=document.getElementById("loginForm");
