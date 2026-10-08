@@ -2,7 +2,7 @@
    Paste your deployed Apps Script /exec URL below.
 */
 (function(){
-  const API_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_EXEC_URL_HERE";
+  const API_URL = "const API_URL = "https://script.google.com/macros/s/AKfycbySlLpuOXdozPRJ6tGYXdfALJM2T05YBoP0IuHk5KMnnQgcO1nzwNecNkc0C2MGZUSl/exec";";
   const KEY = "gaswallet_v9_clean_prod";
   let remoteReady = false;
   let hydrating = false;
