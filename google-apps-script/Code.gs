@@ -23,7 +23,10 @@ function doGet(e) {
   try {
     const action = (e && e.parameter && e.parameter.action) || 'health';
     if (action === 'health') return json_({ ok:true, service:'BharatGas Sheets API' });
-    if (action === 'get') return json_({ ok:true, state: readState_() });
+    if (action === 'get') {
+      const result = { ok:true, state: readState_() };
+      return json_(result, e && e.parameter && e.parameter.callback);
+    }
     return json_({ ok:false, error:'Unknown action' });
   } catch (err) {
     return json_({ ok:false, error:String(err) });
@@ -168,8 +171,14 @@ function readTable_(name) {
   });
 }
 
-function json_(obj) {
+function json_(obj, callback) {
+  const payload = JSON.stringify(obj);
+  if (callback) {
+    return ContentService
+      .createTextOutput(callback + '(' + payload + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService
-    .createTextOutput(JSON.stringify(obj))
+    .createTextOutput(payload)
     .setMimeType(ContentService.MimeType.JSON);
 }
