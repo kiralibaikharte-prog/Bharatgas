@@ -657,6 +657,7 @@ function cleanInitialData(){
 }
 
 let S = load();
+window.S = S;
 let tab = 'cards';
 let tableView = false;
 let F = { q:'', status:'All', month:'All', txType:'All', cardFilter:'Active', refillFilter:'All' };
@@ -673,7 +674,12 @@ function load(){
 
 function save(){
   try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+  if(window.BharatGasSheets && window.BharatGasSheets.save){
+    window.BharatGasSheets.save(S);
+  }
 }
+window.__getBharatGasState = () => S;
+window.__setBharatGasState = (next) => { S = next; window.S = S; };
 
 function uid(){ return 'g_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
 function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -1838,5 +1844,6 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+<script src="./sheets-bridge.js"></script>
 </body>
 </html>
