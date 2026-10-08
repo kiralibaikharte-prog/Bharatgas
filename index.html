@@ -647,6 +647,10 @@ function load(){
 
 function save(){
   try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+  // Shared database: customer/index writes through the same Google Sheets bridge.
+  if(window.BharatGasSheets && window.BharatGasSheets.save){
+    window.BharatGasSheets.save(S);
+  }
 }
 
 function uid(){ return 'g_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
