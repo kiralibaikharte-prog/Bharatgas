@@ -1,6 +1,6 @@
-const CACHE_NAME = 'gaswallet-v4-firebase-admin';
+const CACHE_NAME = 'gaswallet-v5-google-sheets';
 const ASSETS = [
-  './index.html','./manifest.json','./admin.html','./customer.html','./firebase-bridge.js',
+  './index.html','./manifest.json','./admin.html','./customer.html','./sheets-bridge.js',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js',
@@ -22,12 +22,6 @@ self.addEventListener('activate', event => {
 async function transformedResponse(request, response){
   const url = new URL(request.url);
   if(!response || !response.ok) return response;
-
-  if(url.pathname.endsWith('/admin.html')){
-    const html = await response.text();
-    const injected = html.replace('</body>', '<script src="./firebase-bridge.js"></script></body>');
-    return new Response(injected,{headers:{'Content-Type':'text/html; charset=utf-8'}});
-  }
 
   if(url.pathname.endsWith('/index.html') || url.pathname.endsWith('/customer.html') || url.pathname.endsWith('/Bharatgas/')){
     const html = await response.text();
