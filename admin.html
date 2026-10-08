@@ -33,22 +33,7 @@ body{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
 .hidden{display:none !important}
 button,input,select,textarea{font-family:inherit}
 
-/* LOGIN SCREEN (PASSWORDS NOT DISPLAYED FOR SECURITY) */
-.login{position:fixed;inset:0;background:linear-gradient(145deg,#0f172a,#1e293b);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
-.login-card{background:#fff;border-radius:24px;padding:32px 24px;width:100%;max-width:400px;box-shadow:0 25px 60px rgba(0,0,0,0.35);border:1px solid #334155}
-.login-logo{width:56px;height:56px;border-radius:16px;background:#0f172a;color:#10b981;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:18px}
-.login h1{font-size:22px;font-weight:900;letter-spacing:-0.5px}
-.login p.sub{color:var(--muted);font-size:13px;margin:4px 0 20px;font-weight:500}
-.field{margin-bottom:14px;position:relative}
-.field label{display:block;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px}
-.field input,.field select,.field textarea{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:#f8fafc;font-size:14px;font-weight:600;outline:none;color:var(--text);transition:0.15s}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--dark);background:#fff}
-.field input:disabled{background:#f1f5f9;color:var(--muted);cursor:not-allowed}
-.toggle-pass{position:absolute;right:12px;top:33px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted)}
-.role-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;letter-spacing:0.4px}
-.role-admin{background:var(--mint-bg);color:var(--mint-d);border:1px solid var(--mint-border)}
-.role-viewer{background:var(--amber-bg);color:var(--amber-text);border:1px solid var(--amber-border)}
-
+/* Direct access: login UI removed. */
 .btn{width:100%;padding:13px;border-radius:14px;border:none;background:var(--dark);color:#fff;font-size:14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:0.15s}
 .btn:active{transform:scale(0.98)}
 .btn.mint{background:var(--mint);color:#fff}
@@ -259,28 +244,8 @@ html,body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,A
 <body>
 
 <!-- LOGIN SCREEN (SECURE: PASSWORDS NOT DISPLAYED) -->
-<div class="login" id="loginScreen">
-  <div class="login-card">
-    <div class="login-logo">🔥</div>
-    <h1>Gas Wallet</h1>
-    <p class="sub">Bharat Gas Niwali • Secure Team Portal</p>
-    <form id="loginForm" autocomplete="off">
-      <div class="field">
-        <label>Registered Mobile Number</label>
-        <input id="loginMobile" required inputmode="numeric" maxlength="10" placeholder="Enter 10-digit mobile" autocomplete="username">
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input id="loginPass" type="password" required placeholder="Enter password" autocomplete="current-password">
-        <button type="button" class="toggle-pass" id="btnTogglePass" title="Show/Hide Password">👁</button>
-      </div>
-      <button class="btn mint" type="submit" id="loginBtn">Sign In to Gas Wallet →</button>
-    </form>
-  </div>
-</div>
-
-<!-- APP SHELL -->
-<div class="shell hidden" id="app">
+<!-- Direct access: login/password removed. -->
+<div class="shell" id="app">
   <!-- TOPBAR -->
   <div class="topbar">
     <div>
@@ -643,9 +608,7 @@ html,body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,A
    Ajay: Admin (NANDU#01)
    Anil: Viewer Only (ANIL#01)
 ===================================================== */
-const MEMBERS = {
-  '9399968109': { name:'Ajay', role:'admin', title:'Administrator', pass:'NANDU#01' }
-};
+const DIRECT_USER = { name:'Ajay', mobile:'', role:'admin', title:'Administrator' };
 
 const KEY = 'gaswallet_v9_clean_prod';
 const MANDATORY_GAP_DAYS = 25; // Bharat Gas 25-Day Refill Rule
@@ -850,34 +813,6 @@ function renderWalletAndKPIs(){
 /* =====================================================
    SECURE PASSWORD LOGIN (NO DISPLAYED PASSWORDS)
 ===================================================== */
-const loginMobile = document.getElementById('loginMobile');
-const loginPass = document.getElementById('loginPass');
-const btnTogglePass = document.getElementById('btnTogglePass');
-
-btnTogglePass.onclick = () => {
-  loginPass.type = loginPass.type === 'password' ? 'text' : 'password';
-};
-
-document.getElementById('loginForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const mobile = loginMobile.value.trim();
-  const password = loginPass.value.trim();
-
-  const m = MEMBERS[mobile];
-  if(!m){
-    return toast('❌ Mobile not authorized. Contact Ajay.');
-  }
-
-  if(password !== m.pass){
-    return toast('❌ Incorrect Password. Please check and re-enter.');
-  }
-
-  S.user = { name: m.name, mobile, role: m.role, title: m.title };
-  save();
-  showApp();
-  toast(`Welcome, ${m.name}!`);
-});
-
 /* =====================================================
    APP SHELL & ROLE PERMISSIONS
 ===================================================== */
@@ -1847,10 +1782,9 @@ document.getElementById('pvShare').onclick = () => {
 /* =====================================================
    INITIALIZATION & PWA SERVICE WORKER
 ===================================================== */
-// Always require Ajay to authenticate again on a fresh page load.
-S.user = null;
-try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {}
-document.getElementById('loginScreen').classList.remove('hidden');
+S.user = { ...DIRECT_USER };
+window.S = S;
+showApp();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
