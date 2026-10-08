@@ -74,6 +74,13 @@
     if(window.S && window.S.user) window.S.user=null;
     await init();
     installSaveSync();
+    const logout=document.getElementById("logoutBtn");
+    if(logout) logout.addEventListener("click", async function(e){
+      e.preventDefault(); e.stopImmediatePropagation();
+      try{ await auth.signOut(); }catch(_){}
+      if(window.S && window.S.user) window.S.user=null;
+      location.reload();
+    },true);
     const form=document.getElementById("loginForm");
     if(form){
       form.addEventListener("submit", async function(e){
