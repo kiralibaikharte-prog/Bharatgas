@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gaswallet-v5-google-sheets';
+const CACHE_NAME = 'gaswallet-v6-google-sheets';
 const ASSETS = [
   './index.html','./manifest.json','./admin.html','./customer.html','./sheets-bridge.js',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap',
@@ -20,15 +20,7 @@ self.addEventListener('activate', event => {
 });
 
 async function transformedResponse(request, response){
-  const url = new URL(request.url);
-  if(!response || !response.ok) return response;
-
-  if(url.pathname.endsWith('/index.html') || url.pathname.endsWith('/customer.html') || url.pathname.endsWith('/Bharatgas/')){
-    const html = await response.text();
-    const gate = '<script>location.replace("./admin.html");</script>';
-    const injected = html.replace('</body>', gate+'</body>');
-    return new Response(injected,{headers:{'Content-Type':'text/html; charset=utf-8'}});
-  }
+  // Do not redirect index/customer to admin. Both portals are part of the live site.
   return response;
 }
 
