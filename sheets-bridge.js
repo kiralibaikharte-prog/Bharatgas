@@ -42,6 +42,8 @@
     try{
       const res = await jsonp(API_URL);
       if(res && res.ok && res.state){
+        const local = typeof window.__getBharatGasState === "function" ? window.__getBharatGasState() : null;
+        if(local && local.user) res.state.user = local.user;
         setState(res.state);
         remoteReady = true;
         if(typeof window.renderAll === "function") window.renderAll();
@@ -68,7 +70,8 @@
   window.BharatGasSheets = {
     load: loadRemote,
     save: saveRemote,
-    enabled: enabled
+    enabled: enabled,
+    markReady: function(){ remoteReady = true; }
   };
 
   // The existing app calls its own save() function. admin.html now forwards
