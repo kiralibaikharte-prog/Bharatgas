@@ -1,7 +1,9 @@
-const CACHE_NAME = 'gaswallet-v2';
+const CACHE_NAME = 'gaswallet-v3-live';
 const ASSETS = [
   './index.html',
   './manifest.json',
+  './admin.html',
+  './customer.html',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js',
