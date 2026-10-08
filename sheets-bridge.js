@@ -1,21 +1,21 @@
-/* BharatGas Google Sheets bridge
-   Paste your deployed Apps Script /exec URL below.
+/* BharatGas Google Sheets bridge — production
+   Google Sheet is the shared database for admin + customer viewer.
 */
 (function(){
-  const API_URL = "const API_URL = "https://script.google.com/macros/s/AKfycbySlLpuOXdozPRJ6tGYXdfALJM2T05YBoP0IuHk5KMnnQgcO1nzwNecNkc0C2MGZUSl/exec";";
+  const API_URL = "https://script.google.com/macros/s/AKfycbySlLpuOXdozPRJ6tGYXdfALJM2T05YBoP0IuHk5KMnnQgcO1nzwNecNkc0C2MGZUSl/exec";
   const KEY = "gaswallet_v9_clean_prod";
   let remoteReady = false;
   let hydrating = false;
 
   function enabled(){
-    return API_URL && API_URL.indexOf("PASTE_YOUR_") !== 0;
+    return !!API_URL && API_URL.indexOf("/exec") !== -1;
   }
 
   function setState(state){
     if(!state || typeof window.__setBharatGasState !== "function") return;
     hydrating = true;
     window.__setBharatGasState(state);
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(_){}
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(_) {}
     hydrating = false;
   }
 
@@ -42,18 +42,20 @@
     try{
       const res = await jsonp(API_URL);
       if(res && res.ok && res.state){
-        const local = typeof window.__getBharatGasState === "function" ? window.__getBharatGasState() : null;
+        const local = window.__getBharatGasState();
+        // Keep the currently authenticated browser user local; the Sheet stores shared business data.
         if(local && local.user) res.state.user = local.user;
         setState(res.state);
         remoteReady = true;
         if(typeof window.renderAll === "function") window.renderAll();
         return true;
       }
+      throw new Error("Invalid Google Sheets response");
     }catch(e){
-      console.error("Google Sheets load failed:",e);
-      window.toast && window.toast("⚠️ Sheet sync failed — local data kept");
+      console.error("Google Sheets load failed:", e);
+      if(typeof window.toast === "function") window.toast("⚠️ Sheet sync failed — local data kept");
+      return false;
     }
-    return false;
   }
 
   function saveRemote(state){
@@ -63,6 +65,8 @@
         method:"POST",
         headers:{"Content-Type":"text/plain;charset=utf-8"},
         body:JSON.stringify({action:"save",state:state})
+      }).then(r=>r.json()).then(res=>{
+        if(!res || !res.ok) console.error("Google Sheets save rejected:",res);
       }).catch(e=>console.error("Google Sheets save failed:",e));
     }catch(e){ console.error(e); }
   }
@@ -74,22 +78,18 @@
     markReady: function(){ remoteReady = true; }
   };
 
-  // The existing app calls its own save() function. admin.html now forwards
-  // that save to this bridge after updating localStorage.
   window.addEventListener("load", async ()=>{
     if(!enabled()) return;
     if(window.S && window.S.user){
       await loadRemote();
     } else {
-      // Wait for the normal admin login. Once logged in, the first save() marks
-      // the bridge ready and uploads only after the remote state is loaded.
       const form = document.getElementById("loginForm");
       if(form){
         form.addEventListener("submit", async ()=>{
           setTimeout(async ()=>{
             await loadRemote();
             remoteReady = true;
-          }, 150);
+          },150);
         }, true);
       }
     }
