@@ -1705,8 +1705,13 @@ document.getElementById('btnShareList').onclick = () => {
   window.open(`https://wa.me/919301031375?text=${encodeURIComponent(msg)}`, '_blank');
 };
 
-document.getElementById('btnSyncNow').onclick = () => {
-  save(); renderAll(); toast('🔄 Refreshed & Synced');
+document.getElementById('btnSyncNow').onclick = async () => {
+  if(window.BharatGasSheets && window.BharatGasSheets.load){
+    const ok = await window.BharatGasSheets.load();
+    renderAll();
+    return toast(ok ? '🔄 Live Google Sheets data loaded' : '⚠️ Sheet sync failed — local data kept');
+  }
+  save(); renderAll(); toast('🔄 Refreshed');
 };
 
 /* =====================================================
@@ -1842,12 +1847,10 @@ document.getElementById('pvShare').onclick = () => {
 /* =====================================================
    INITIALIZATION & PWA SERVICE WORKER
 ===================================================== */
-if(S.user && MEMBERS[S.user.mobile]){
-  S.user = { ...MEMBERS[S.user.mobile], mobile: S.user.mobile };
-  showApp();
-} else {
-  document.getElementById('loginScreen').classList.remove('hidden');
-}
+// Always require Ajay to authenticate again on a fresh page load.
+S.user = null;
+try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {}
+document.getElementById('loginScreen').classList.remove('hidden');
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
