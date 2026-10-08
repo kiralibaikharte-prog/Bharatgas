@@ -115,6 +115,25 @@ function readState_() {
   state.transactions = readTable_(SHEETS.transactions);
   state.distributorPayments = readTable_(SHEETS.distributorPayments);
 
+  // Keep dashboard delivery/empty counts tied to the actual Bookings sheet.
+  // Total cylinders remains the manually managed opening/current inventory
+  // (stock_total). Cash Transactions are intentionally not treated as stock
+  // purchases because that table has no cylinder-count field.
+  const deliveredFromBookings = state.bookings.filter(b =>
+    String(b.status || '').trim().toLowerCase() === 'delivered'
+  ).length;
+  const emptyFromBookings = state.bookings.filter(b =>
+    b.emptyReceived === true ||
+    String(b.emptyReceived || '').trim().toLowerCase() === 'true'
+  ).length;
+
+  const currentUnits = state.units || {};
+  state.units = {
+    total: Math.max(0, Number(currentUnits.total) || 0),
+    delivered: deliveredFromBookings,
+    empty: emptyFromBookings
+  };
+
   return state;
 }
 
