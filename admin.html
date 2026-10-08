@@ -244,7 +244,18 @@ button,input,select,textarea{font-family:inherit}
 
 .receipt-card{background:#fff;width:380px;padding:22px;border-radius:18px;box-shadow:var(--shadow-md);font-family:'Inter',sans-serif;color:#0f172a;position:fixed;left:-9999px;top:0}
 </style>
-</head>
+<style>/* UI POLISH — visual only, no functionality changes */
+:root{--bg:#f5f7fb;--card:#fff;--dark:#111827;--dark2:#1f2937;--mint:#059669;--mint-d:#047857;--mint-bg:#ecfdf5;--mint-border:#a7f3d0;--amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;--amber-text:#92400e;--blue:#2563eb;--blue-bg:#eff6ff;--blue-border:#bfdbfe;--purple:#7c3aed;--purple-bg:#f5f3ff;--purple-border:#ddd6fe;--red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--shadow-sm:0 1px 2px rgba(17,24,39,.05);--shadow-md:0 8px 24px rgba(17,24,39,.08)}
+html,body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);letter-spacing:-.01em}
+.login{background:linear-gradient(145deg,#111827,#1f2937)} .login-card{border-color:#e5e7eb;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.login h1,.hello,.rc-name{letter-spacing:-.035em}.btn{background:#111827;box-shadow:0 2px 5px rgba(17,24,39,.08)}.btn.mint{background:#059669}.topbar{padding-top:18px}.avatar{background:linear-gradient(135deg,#111827,#374151)}
+.sync-bar,.refill-kpi-banner,.units,.search input,.view-btn,.monthsel,.chip,.refill-card{border-color:#e5e7eb}
+.wallet{background:linear-gradient(135deg,#111827,#1f2937);box-shadow:0 14px 30px rgba(17,24,39,.16)}
+.tabs{background:#e9edf3}.tab.active,.chip.active{background:#111827}
+.refill-card{box-shadow:0 2px 8px rgba(17,24,39,.04)} .field input,.field select,.field textarea{background:#f9fafb;border-color:#e5e7eb}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#111827;box-shadow:0 0 0 3px rgba(17,24,39,.06)}
+.search input:focus{border-color:#111827} button,.btn,.tab,.chip,.pill,.view-btn,.unit{transition:all .16s ease}
+</style></head>
 <body>
 
 <!-- LOGIN SCREEN (SECURE: PASSWORDS NOT DISPLAYED) -->
