@@ -655,6 +655,13 @@ function load(){
 }
 
 function save(){
+  // Keep the stock object valid before every local/Google Sheets write.
+  S.units = {
+    total: Math.max(0, parseInt(S.units && S.units.total) || 0),
+    empty: Math.max(0, parseInt(S.units && S.units.empty) || 0),
+    delivered: Math.max(0, parseInt(S.units && S.units.delivered) || 0)
+  };
+  window.S = S;
   try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
   if(window.BharatGasSheets && window.BharatGasSheets.save){
     window.BharatGasSheets.save(S);
