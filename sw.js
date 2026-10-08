@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gaswallet-v6-google-sheets';
+const CACHE_NAME = 'gaswallet-v7-live-sheets';
 const ASSETS = [
   './index.html','./manifest.json','./admin.html','./customer.html','./sheets-bridge.js',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap',
@@ -26,6 +26,13 @@ async function transformedResponse(request, response){
 
 self.addEventListener('fetch', event => {
   if(event.request.method !== 'GET') return;
+
+  // Google Apps Script is the live database. Never serve/cache its JSONP
+  // responses from the PWA cache.
+  if(event.request.url.indexOf('script.google.com/macros/s/AKfycbySlLpuOXdozPRJ6tGYXdfALJM2T05YBoP0IuHk5KMnnQgcO1nzwNecNkc0C2MGZUSl/exec') === 0){
+    event.respondWith(fetch(event.request, { cache:'no-store' }));
+    return;
+  }
   event.respondWith((async()=>{
     try{
       const network = await fetch(event.request);
