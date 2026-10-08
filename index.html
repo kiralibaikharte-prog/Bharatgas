@@ -657,6 +657,9 @@ function cleanInitialData(){
 }
 
 let S = load();
+window.S = S;
+window.__getBharatGasState = () => S;
+window.__setBharatGasState = (next) => { S = next || cleanInitialData(); window.S = S; };
 let tab = 'cards';
 let tableView = false;
 let F = { q:'', status:'All', month:'All', txType:'All', cardFilter:'Active', refillFilter:'All' };
@@ -1688,8 +1691,14 @@ document.getElementById('btnShareList').onclick = () => {
   window.open(`https://wa.me/919301031375?text=${encodeURIComponent(msg)}`, '_blank');
 };
 
-document.getElementById('btnSyncNow').onclick = () => {
-  save(); renderAll(); toast('🔄 Refreshed & Synced');
+document.getElementById('btnSyncNow').onclick = async () => {
+  if(window.BharatGasSheets && window.BharatGasSheets.load){
+    const ok = await window.BharatGasSheets.load();
+    renderAll();
+    return toast(ok ? '🔄 Live Google Sheets data loaded' : '⚠️ Sheet sync failed — local data kept');
+  }
+  renderAll();
+  toast('🔄 Refreshed');
 };
 
 /* =====================================================
@@ -1838,5 +1847,6 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+<script src="./sheets-bridge.js"></script>
 </body>
 </html>
