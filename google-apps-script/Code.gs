@@ -87,11 +87,29 @@ function readState_() {
     ? settings.getRange(2,1,settings.getLastRow()-1,2).getValues()
     : [];
   let state = {};
+  const stockRows = {};
   rows.forEach(r => {
-    if (r[0] === 'appState' && r[1]) {
-      try { state = JSON.parse(r[1]); } catch (_) {}
+    const key = String(r[0] || '');
+    const value = r[1];
+    if (key === 'appState' && value) {
+      try { state = JSON.parse(value); } catch (_) {}
     }
+    if (key.indexOf('stock_') === 0) stockRows[key] = value;
   });
+
+  // Support both formats:
+  // 1) normal appState.units object
+  // 2) human-editable stock_* rows in the Settings sheet.
+  // stock_* rows take priority when present, so edits made directly in
+  // Google Sheets are immediately reflected in the website.
+  if (Object.keys(stockRows).length) {
+    const current = state.units || {};
+    state.units = {
+      total: Math.max(0, Number(stockRows.stock_total ?? current.total) || 0),
+      delivered: Math.max(0, Number(stockRows.stock_delivered ?? current.delivered) || 0),
+      empty: Math.max(0, Number(stockRows.stock_empty ?? current.empty) || 0)
+    };
+  }
 
   state.bookings = readTable_(SHEETS.bookings);
   state.transactions = readTable_(SHEETS.transactions);
@@ -112,8 +130,16 @@ function writeState_(state) {
     rates: state.rates || {}
   };
   settings.clearContents();
-  settings.getRange(1,1,1,2).setValues([['Key','Value']]);
-  settings.getRange(2,1,1,2).setValues([['appState', JSON.stringify(stateCore)]]);
+  settings.getRange(1,1,5,2).setValues([
+    ['Key','Value'],
+    ['appState', JSON.stringify(stateCore)],
+    ['stock_total', Number(stateCore.units.total) || 0],
+    ['stock_delivered', Number(stateCore.units.delivered) || 0],
+    ['stock_available', Math.max(0, (Number(stateCore.units.total) || 0) - (Number(stateCore.units.delivered) || 0))]
+  ]);
+  settings.getRange(6,1,1,2).setValues([
+    ['stock_empty', Number(stateCore.units.empty) || 0]
+  ]);
 
   writeTable_(SHEETS.bookings, state.bookings || []);
   writeTable_(SHEETS.transactions, state.transactions || []);
