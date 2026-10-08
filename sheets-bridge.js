@@ -49,7 +49,7 @@
       window[cb] = data => { cleanup(); resolve(data); };
       script.onerror = () => { cleanup(); reject(new Error("Google Sheet request failed")); };
       script.src = url + (url.includes("?") ? "&" : "?") +
-        "action=get&callback=" + encodeURIComponent(cb);
+        "action=get&callback=" + encodeURIComponent(cb) + "&_ts=" + Date.now();
       document.head.appendChild(script);
     });
   }
